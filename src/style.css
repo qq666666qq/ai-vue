@@ -1,0 +1,52 @@
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var,
+b, i,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+/* 移除 table 相关的全局背景透明设置，避免影响 Element Plus 表格的 fixed 效果 */
+table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  /* font-size:100%; */
+  vertical-align: baseline;
+}
+
+a {
+  text-decoration: none;
+}
+
+li {
+  list-style: none;
+}
+
+body {
+  height: 100vh;
+  background-color: #f1f4f6;
+}
+
+#app {
+  height: 100%;
+}
+
+.el-header {
+  height: 50px !important;
+  padding: 0 !important;
+  box-shadow: 0px 1px 1px rgba(0,0,0,0.05);
+  border-bottom: 1px solid transparent;
+}
+
+.pagination-info {
+  padding: 10px 0;
+  background-color: #fff;
+  .el-pagination {
+    justify-content: end;
+  }
+}
+.el-form-item__label {
+  padding: 0 12px 0 !important;
+}
