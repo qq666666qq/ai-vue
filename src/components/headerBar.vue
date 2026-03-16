@@ -2,7 +2,7 @@
   <div class="header-bar">
    <div class="title-box">
      <el-button :icon="Expand" @click="handleCollapse" />
-     <div class="title">数据分析</div>
+     <div class="title">{{route.meta.title}}</div>
    </div>
    <div class="logo-box">
     <el-dropdown class="dropdown-box">
@@ -17,11 +17,7 @@
      </div>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item>Action 1</el-dropdown-item>
-          <el-dropdown-item>Action 2</el-dropdown-item>
-          <el-dropdown-item>Action 3</el-dropdown-item>
-          <el-dropdown-item disabled>Action 4</el-dropdown-item>
-          <el-dropdown-item divided>Action 5</el-dropdown-item>
+          <el-dropdown-item @click="handleCommand('logout')">退出登录</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -31,7 +27,33 @@
 
 <script setup>
 import { Expand } from '@element-plus/icons-vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { logout } from '@/api/admin'
 
+
+// 1. 获取路由实例
+const route = useRoute()
+const router = useRouter()
+
+const handleCommand = (command) => {
+  console.log(command,'command')
+  if (command === 'logout') {
+    ElMessageBox.confirm('确定退出登录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      logout().then(() => {
+        // 清除本地存储中的 token
+        localStorage.removeItem('token')
+        localStorage.removeItem('userInfo')
+        router.push('/auth/login')
+        ElMessage.success('退出登录成功')
+      })
+    })
+  }
+}
 // 1. 在顶层声明事件，获取 emit 函数
 const emit = defineEmits(['changeCollapse'])
 

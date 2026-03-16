@@ -131,6 +131,14 @@ export function getOverview() {
   });
 }
 
+// 退出登录
+export function logout() {
+  return service({
+    url: '/user/logout',
+    method: 'post'
+  });
+}
+
 
 
 

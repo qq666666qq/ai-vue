@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory  } from "vue-router";
 import fixedLayout from "@/components/fixedLayout.vue";
 import authLayout from "@/components/authLayout.vue";
+import component from "element-plus/es/components/tree-select/src/tree-select-option.mjs";
 const routerList = [
   {
     path: '/back',
+    redirect: '/back/dataAnalysis',//默认跳转到数据分析
     name: 'back',
     component: fixedLayout,
     children: [
@@ -73,7 +75,58 @@ const routerList = [
 ]
 const router = createRouter({
   history: createWebHistory(),
-  routes: routerList
+  routes: [...frontlayouot,...routerList]
+})
+
+const frontlayouot=[{
+  path:"/",
+  component:frontLayout,
+  children:[
+    {
+      path:"/",
+      component:()=>import('@/views/home.vue'),
+      
+    },
+    {
+      path:"/consultation",
+      component:()=>import('@/views/consultation.vue'),
+      
+    },
+    {
+      path:"/emotion-diary",
+      component:()=>import('@/views/emotionDiary.vue'),
+      
+    },
+    {
+      path:"/knowledge",
+      component:()=>import('@/views/knowledge.vue'),
+      
+    },
+  ]
+}]
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    if (userInfo.userType == 2) {
+      if (to.path.startsWith('/back')) {
+        next()
+      } else {
+        next('/back/dataAnalysis')
+      }
+    } else if (userInfo.userType == 1) {
+      next()
+    } else {
+      next('/auth/login')
+    }
+  } else {
+    if (to.path.startsWith('/back')) {
+      next('/auth/login')
+    } else {
+      next()
+    }
+  }
 })
 
 export default router
