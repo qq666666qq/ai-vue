@@ -2,6 +2,7 @@ import { createRouter, createWebHistory  } from "vue-router";
 import fixedLayout from "@/components/fixedLayout.vue";
 import authLayout from "@/components/authLayout.vue";
 import component from "element-plus/es/components/tree-select/src/tree-select-option.mjs";
+import frontLayout from "@/components/frontLayout.vue";
 const routerList = [
   {
     path: '/back',
@@ -73,11 +74,6 @@ const routerList = [
     ]
   },
 ]
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [...frontlayouot,...routerList]
-})
-
 const frontlayouot=[{
   path:"/",
   component:frontLayout,
@@ -99,11 +95,17 @@ const frontlayouot=[{
     },
     {
       path:"/knowledge",
-      component:()=>import('@/views/knowledge.vue'),
+      component:()=>import('@/views/frontentKnowledge.vue'),
       
     },
   ]
 }]
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [...routerList,...frontlayouot]
+})
+
+
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
@@ -115,16 +117,18 @@ router.beforeEach((to, from, next) => {
       } else {
         next('/back/dataAnalysis')
       }
-    } else if (userInfo.userType == 1) {
-      next()
-    } else {
-      next('/auth/login')
+    } else if (userInfo.userType == 1) { 
+      if (to.path.startsWith('/back')||to.path.startsWith('/auth')) {
+        next("/")
+      } else {
+        next()
+      }
     }
   } else {
-    if (to.path.startsWith('/back')) {
-      next('/auth/login')
-    } else {
+    if (to.path.startsWith('/auth') || to.path === '/' || to.path.startsWith('/consultation') || to.path.startsWith('/emotion-diary') || to.path.startsWith('/knowledge')) {
       next()
+    } else {
+      next('/auth/login')
     }
   }
 })

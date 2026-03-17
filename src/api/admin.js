@@ -8,6 +8,7 @@ export function login(data) {
     data
   });
 }
+
 // 分类接口
 export function getCategoryTree() {
   return service({
