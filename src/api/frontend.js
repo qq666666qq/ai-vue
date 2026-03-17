@@ -1,3 +1,5 @@
+import service from '@/util/request'
+
 // 注册接口
 export function register(data) {
   return service({

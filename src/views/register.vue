@@ -75,20 +75,11 @@
             <el-option label="保密" :value="0"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item prop="age">
-          <template #label>
-            <div class="label-wrapper">
-              <span class="star">*</span>
-              <span class="label-text">年龄</span>
-            </div>
-          </template>
-          <el-input-number size="default" v-model="formData.age" :min="1" :max="150" placeholder="请输入年龄" style="width: 100%;"></el-input-number>
-        </el-form-item>
         <div class="btn">
           <el-button type="primary" size="default" @click="handleRegister(registerForm)">注册账户</el-button>
         </div>
         <div class="footer">
-          已有账户？<el-link type="primary" href="auth/login">去登录</el-link>
+          已有账户？<router-link to="/auth/login" class="login-link">去登录</router-link>
         </div>
       </el-form>
     </div>
@@ -106,13 +97,13 @@ const registerForm = ref();
 
 const formData = reactive({
   username: '',
-  password: '',
-  confirmPassword: '',
   email: '',
   nickname: '',
   phone: '',
+  password: '',
+  confirmPassword: '',
   gender: '',
-  age: ''
+  userType: 1
 });
 
 const validateConfirmPassword = (rule, value, callback) => {
@@ -163,9 +154,6 @@ const rules = reactive({
   ],
   gender: [
     { required: true, message: '请选择性别', trigger: 'change' }
-  ],
-  age: [
-    { required: true, message: '请输入年龄', trigger: 'blur' }
   ]
 });
 
@@ -175,12 +163,17 @@ const handleRegister = async (formEl) => {
     await formEl.validate((valid, fields) => {
       if (valid) {
         const data = { ...formData };
-        delete data.confirmPassword;
         register(data).then(res => {
-          ElMessage.success('注册成功');
-          router.push('/auth/login');
-        }).catch(() => {
-          ElMessage.error('注册失败');
+          ElMessage.success('注册成功，3秒后自动跳转到登录页面');
+          setTimeout(() => {
+            router.push('/auth/login');
+          }, 3000);
+        }).catch((error) => {
+          if (typeof error === 'string') {
+            ElMessage.error(error);
+          } else {
+            ElMessage.error('注册失败，请稍后重试');
+          }
         });
       }
     });
@@ -253,6 +246,15 @@ const handleRegister = async (formEl) => {
     .footer {
       padding: 24px 0;
       text-align: center;
+      .login-link {
+        color: #409eff;
+        text-decoration: none;
+        margin-left: 4px;
+        &:hover {
+          color: #66b1ff;
+          text-decoration: underline;
+        }
+      }
     }
   }
 }

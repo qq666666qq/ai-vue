@@ -20,7 +20,7 @@
       <div class="footer">
         <el-button type="primary" size="large" @click="handleLogin(loginForm)">登录账户</el-button>
         <div class="tips">
-          还没有账户？<el-link type="primary" href="auth/register">去注册</el-link>
+          还没有账户？<router-link to="/auth/register" class="register-link">去注册</router-link>
         </div>
       </div>
     </el-form>
@@ -61,6 +61,7 @@ const handleLogin = async (formEl) => {
           if (data.userInfo.userType === 2) {
             router.push('/back/dataAnalysis');
           } else {
+            location.replace('/');
           }
         })
       }
@@ -105,6 +106,15 @@ const handleLogin = async (formEl) => {
       align-items: center;
       font-size: 14px;
       color: #666;
+      .register-link {
+        color: #409eff;
+        text-decoration: none;
+        margin-left: 4px;
+        &:hover {
+          color: #66b1ff;
+          text-decoration: underline;
+        }
+      }
     }
   }
 }

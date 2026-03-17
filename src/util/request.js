@@ -30,22 +30,25 @@ service.interceptors.response.use(
       return data.data;
     } else {
       if (data.code === '-1') {
-        if (!config.url.includes('/login')) {
+        if (!config.url.includes('/login') && !config.url.includes('/user/add')) {
           ElMessage.error(data.msg || '登录过期，请重新登录');
           // 清除token
           localStorage.removeItem('token');
           localStorage.removeItem('userInfo');
           window.location.href = '/auth/login';
         } else {
-          ElMessage.error(data.msg || '登录过期，请重新登录');
-          return Promise.reject('网络请求失败...');
+          ElMessage.error(data.msg || '操作失败');
+          return Promise.reject(data.msg || '操作失败');
         }
-      } 
+      } else {
+        ElMessage.error(data.msg || '操作失败');
+        return Promise.reject(data.msg || '操作失败');
+      }
     }
-    return response;
   },
   error => {
     // 对响应错误做点什么
+    ElMessage.error(error.message || '网络请求失败');
     return Promise.reject(error);
   }
 );

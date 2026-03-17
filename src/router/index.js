@@ -125,10 +125,10 @@ router.beforeEach((to, from, next) => {
       }
     }
   } else {
-    if (to.path.startsWith('/auth') || to.path === '/' || to.path.startsWith('/consultation') || to.path.startsWith('/emotion-diary') || to.path.startsWith('/knowledge')) {
-      next()
-    } else {
+    if (to.path.startsWith('/back')) {
       next('/auth/login')
+    } else {
+      next()
     }
   }
 })
