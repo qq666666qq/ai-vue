@@ -17,7 +17,7 @@ service.interceptors.request.use(
     }
     return config;
   },
-  error => {
+  (error) => {
     // 错误提示
     return Promise.reject(error);
   }
@@ -37,16 +37,13 @@ service.interceptors.response.use(
           localStorage.removeItem('userInfo');
           window.location.href = '/auth/login';
         } else {
-          ElMessage.error(data.msg || '操作失败');
-          return Promise.reject(data.msg || '操作失败');
+          ElMessage.error(data.msg || '登录过期，请重新登录');
+          return Promise.reject('网络请求失败');
         }
-      } else {
-        ElMessage.error(data.msg || '操作失败');
-        return Promise.reject(data.msg || '操作失败');
-      }
+      } 
     }
   },
-  error => {
+  (error) => {
     // 对响应错误做点什么
     ElMessage.error(error.message || '网络请求失败');
     return Promise.reject(error);

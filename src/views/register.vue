@@ -158,27 +158,25 @@ const rules = reactive({
 });
 
 const handleRegister = async (formEl) => {
-  if (!formEl) return
+  const form = formEl?.value ?? formEl ?? registerForm.value;
+  if (!form) return;
+
+  const valid = await form.validate().catch(() => false);
+  if (!valid) return;
+
   try {
-    await formEl.validate((valid, fields) => {
-      if (valid) {
-        const data = { ...formData };
-        register(data).then(res => {
-          ElMessage.success('注册成功，3秒后自动跳转到登录页面');
-          setTimeout(() => {
-            router.push('/auth/login');
-          }, 3000);
-        }).catch((error) => {
-          if (typeof error === 'string') {
-            ElMessage.error(error);
-          } else {
-            ElMessage.error('注册失败，请稍后重试');
-          }
-        });
-      }
-    });
+    const data = { ...formData };
+    await register(data);
+    ElMessage.success('注册成功，3秒后自动跳转到登录页面');
+    setTimeout(() => {
+      router.push('/auth/login');
+    }, 3000);
   } catch (error) {
-    console.error(error);
+    if (typeof error === 'string') {
+      ElMessage.error(error);
+    } else {
+      ElMessage.error('注册失败，请稍后重试');
+    }
   }
 };
 </script>
