@@ -98,6 +98,11 @@ const frontlayouot=[{
       component:()=>import('@/views/frontentKnowledge.vue'),
       
     },
+    {
+      path:"/knowledge/article/:id",
+      component:()=>import('@/views/articleDetail.vue'),
+
+    }
   ]
 }]
 const router = createRouter({

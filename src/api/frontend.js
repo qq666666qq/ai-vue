@@ -45,3 +45,26 @@ export function getSessionEmotion(sessionId) {
     method: 'get',
   });
 }
+// 创建或或更新情绪日记
+export function createOrUpdateEmotionDiary(data) {
+  return service({
+    url: '/emotion-diary',
+    method: 'post',
+    data
+  });
+}
+// 查询知识文章列表
+export function getKnowledgeList(params) {
+  return service({
+    url: '/knowledge/article/page',
+    method: 'get',
+    params
+  });
+}
+// 查询知识文章详情
+export function getKnowledgeDetail(id) {
+  return service({
+    url: `/knowledge/article/${id}`,
+    method: 'get'
+  });
+}
