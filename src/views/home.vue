@@ -106,13 +106,14 @@ const animateCharacter = () => {
   const dy = mouseY.value - characterY.value
   const distance = Math.sqrt(dx * dx + dy * dy)
   
-  if (distance > 10) {
+  if (distance > 5) {
     isWalking.value = true
     facingLeft.value = dx < 0
     
-    const speed = Math.min(distance * 0.05, 8)
-    characterX.value += (dx / distance) * speed
-    characterY.value += (dy / distance) * speed
+    // 添加平滑的缓动效果
+    const ease = 0.08
+    characterX.value += dx * ease
+    characterY.value += dy * ease
   } else {
     isWalking.value = false
   }
@@ -424,11 +425,19 @@ onUnmounted(() => {
 
 /* 走路动画 */
 .pixel-character.mouse-follow.is-walking .character-leg.left {
-  animation: walk-left 0.3s ease-in-out infinite;
+  animation: walk-left 0.5s ease-in-out infinite;
 }
 
 .pixel-character.mouse-follow.is-walking .character-leg.right {
-  animation: walk-right 0.3s ease-in-out infinite;
+  animation: walk-right 0.5s ease-in-out infinite;
+}
+
+.pixel-character.mouse-follow.is-walking .character-arm.left {
+  animation: walk-arm-left 0.5s ease-in-out infinite;
+}
+
+.pixel-character.mouse-follow.is-walking .character-arm.right {
+  animation: walk-arm-right 0.5s ease-in-out infinite;
 }
 
 @keyframes walk-left {
@@ -436,16 +445,34 @@ onUnmounted(() => {
     transform: rotate(0deg) translateY(0);
   }
   50% {
-    transform: rotate(20deg) translateY(-5px);
+    transform: rotate(25deg) translateY(-8px);
   }
 }
 
 @keyframes walk-right {
   0%, 100% {
-    transform: rotate(0deg) translateY(-5px);
+    transform: rotate(0deg) translateY(0);
   }
   50% {
-    transform: rotate(-20deg) translateY(0);
+    transform: rotate(-25deg) translateY(-8px);
+  }
+}
+
+@keyframes walk-arm-left {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-30deg);
+  }
+}
+
+@keyframes walk-arm-right {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(30deg);
   }
 }
 
