@@ -1,5 +1,5 @@
 <template>
-  <div class="pixel-home">
+  <div class="pixel-home" @mousemove="handleMouseMove">
     <!-- 像素风格背景 -->
     <div class="pixel-background">
       <div class="pixel-sky"></div>
@@ -13,36 +13,42 @@
       <div class="pixel-tree" style="right: 10%"></div>
     </div>
     
-    <!-- 主内容区 -->
-    <div class="home-content">
-      <!-- 像素角色 -->
-      <div class="pixel-character animated">
-        <div class="character-head">
-          <div class="character-hair"></div>
-          <div class="character-face">
-            <div class="character-eyes">
-              <div class="character-eye"></div>
-              <div class="character-eye"></div>
-            </div>
-            <div class="character-mouth"></div>
+    <!-- 跟随鼠标的像素角色 -->
+    <div 
+      class="pixel-character mouse-follow" 
+      ref="characterRef"
+      :style="characterStyle"
+      :class="{ 'is-walking': isWalking, 'facing-left': facingLeft }"
+    >
+      <div class="character-head">
+        <div class="character-hair"></div>
+        <div class="character-face">
+          <div class="character-eyes">
+            <div class="character-eye"></div>
+            <div class="character-eye"></div>
           </div>
-        </div>
-        <div class="character-body"></div>
-        <div class="character-arms">
-          <div class="character-arm left"></div>
-          <div class="character-arm right"></div>
-        </div>
-        <div class="character-legs">
-          <div class="character-leg left"></div>
-          <div class="character-leg right"></div>
+          <div class="character-mouth"></div>
         </div>
       </div>
-      
+      <div class="character-body"></div>
+      <div class="character-arms">
+        <div class="character-arm left"></div>
+        <div class="character-arm right"></div>
+      </div>
+      <div class="character-legs">
+        <div class="character-leg left"></div>
+        <div class="character-leg right"></div>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="home-content">
       <!-- 欢迎信息 -->
       <div class="welcome-section">
         <div class="pixel-speech-bubble">
           <div class="speech-content">
             <h2>你好！欢迎来到心灵牧场 🌟</h2>
+            <p>移动鼠标，我会跟着你走哦！</p>
             <p>我是你的AI朋友，在这里你可以：</p>
             <ul>
               <li>💬 与我聊天，分享你的心情</li>
@@ -70,11 +76,49 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import StardewButton from '../components/StardewButton.vue'
 
 const router = useRouter()
+const characterRef = ref(null)
+
+const mouseX = ref(window.innerWidth / 2)
+const mouseY = ref(window.innerHeight / 2)
+const characterX = ref(window.innerWidth / 2)
+const characterY = ref(window.innerHeight / 2)
+const isWalking = ref(false)
+const facingLeft = ref(false)
+let animationFrameId = null
+
+const characterStyle = computed(() => ({
+  left: `${characterX.value}px`,
+  top: `${characterY.value}px`
+}))
+
+const handleMouseMove = (event) => {
+  mouseX.value = event.clientX
+  mouseY.value = event.clientY
+}
+
+const animateCharacter = () => {
+  const dx = mouseX.value - characterX.value
+  const dy = mouseY.value - characterY.value
+  const distance = Math.sqrt(dx * dx + dy * dy)
+  
+  if (distance > 10) {
+    isWalking.value = true
+    facingLeft.value = dx < 0
+    
+    const speed = Math.min(distance * 0.05, 8)
+    characterX.value += (dx / distance) * speed
+    characterY.value += (dy / distance) * speed
+  } else {
+    isWalking.value = false
+  }
+  
+  animationFrameId = requestAnimationFrame(animateCharacter)
+}
 
 const navigateToConsultation = () => {
   router.push('/consultation')
@@ -89,8 +133,14 @@ const navigateToKnowledge = () => {
 }
 
 onMounted(() => {
-  // 添加页面加载动画
   document.body.classList.add('page-loaded')
+  animateCharacter()
+})
+
+onUnmounted(() => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+  }
 })
 </script>
 
@@ -308,8 +358,8 @@ onMounted(() => {
   padding: 0 20px;
 }
 
-/* 像素角色 */
-.pixel-character {
+/* 像素角色 - 原始静态版本 */
+.pixel-character.animated {
   position: relative;
   width: 120px;
   height: 180px;
@@ -323,6 +373,79 @@ onMounted(() => {
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+/* 像素角色 - 跟随鼠标版本 */
+.pixel-character.mouse-follow {
+  position: fixed;
+  width: 80px;
+  height: 120px;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: transform 0.1s ease;
+}
+
+.pixel-character.mouse-follow.facing-left {
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+
+.pixel-character.mouse-follow .character-head {
+  width: 40px;
+  height: 40px;
+}
+
+.pixel-character.mouse-follow .character-body {
+  width: 32px;
+  height: 40px;
+}
+
+.pixel-character.mouse-follow .character-arms {
+  top: 50px;
+  left: -14px;
+  width: 108px;
+}
+
+.pixel-character.mouse-follow .character-arm {
+  width: 12px;
+  height: 28px;
+}
+
+.pixel-character.mouse-follow .character-legs {
+  left: 18px;
+  width: 44px;
+}
+
+.pixel-character.mouse-follow .character-leg {
+  width: 12px;
+  height: 28px;
+}
+
+/* 走路动画 */
+.pixel-character.mouse-follow.is-walking .character-leg.left {
+  animation: walk-left 0.3s ease-in-out infinite;
+}
+
+.pixel-character.mouse-follow.is-walking .character-leg.right {
+  animation: walk-right 0.3s ease-in-out infinite;
+}
+
+@keyframes walk-left {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(20deg) translateY(-5px);
+  }
+}
+
+@keyframes walk-right {
+  0%, 100% {
+    transform: rotate(0deg) translateY(-5px);
+  }
+  50% {
+    transform: rotate(-20deg) translateY(0);
   }
 }
 
