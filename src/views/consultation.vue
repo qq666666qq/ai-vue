@@ -1,15 +1,36 @@
 <template>
   <div class="stardew-consultation">
-    <div class="sky-bg">
-      <div class="sun-mini"></div>
-      <div class="cloud-mini cloud-m1"></div>
-      <div class="cloud-mini cloud-m2"></div>
+    <!-- 农场背景 -->
+    <div class="farm-background">
+      <div class="sky">
+        <div class="sun"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+      </div>
+      <div class="land">
+        <div class="grass"></div>
+        <div class="fence"></div>
+        <div class="crops">
+          <div class="crop" v-for="i in 8" :key="i"></div>
+        </div>
+        <div class="barn"></div>
+        <div class="tree tree-1"></div>
+        <div class="tree tree-2"></div>
+      </div>
+    </div>
+    
+    <!-- 装饰元素 -->
+    <div class="decorations">
+      <div class="floating-heart" v-for="i in 5" :key="i"></div>
+      <div class="sparkle" v-for="i in 8" :key="i"></div>
     </div>
     
     <div class="game-container">
       <div class="left-panel">
+        <!-- NPC卡片 -->
         <div class="npc-card">
-          <div class="npc-avatar" :class="{ 'talking': isAiTyping }">
+          <div class="npc-avatar" :class="{ 'talking': isAiTyping, 'waving': !isAiTyping }">
             <div class="npc-head">
               <div class="npc-hair"></div>
               <div class="npc-face">
@@ -17,10 +38,17 @@
                   <div class="npc-eye"></div>
                   <div class="npc-eye"></div>
                 </div>
-                <div class="npc-mouth" :class="{ 'talking': isAiTyping }"></div>
+                <div class="npc-mouth" :class="{ 'talking': isAiTyping, 'smile': !isAiTyping }"></div>
               </div>
             </div>
-            <div class="npc-body"></div>
+            <div class="npc-body">
+              <div class="npc-arm left"></div>
+              <div class="npc-arm right"></div>
+            </div>
+            <div class="npc-legs">
+              <div class="npc-leg left"></div>
+              <div class="npc-leg right"></div>
+            </div>
           </div>
           <div class="npc-info">
             <h3>小暖</h3>
@@ -28,12 +56,19 @@
               <span class="status-dot"></span>
               在线服务中
             </div>
+            <div class="speech-bubble small" v-if="!isAiTyping">
+              <div class="bubble-content">
+                <p>你好！有什么可以帮助你的吗？</p>
+              </div>
+              <div class="bubble-tail"></div>
+            </div>
           </div>
         </div>
 
+        <!-- 情绪花园卡片 -->
         <div class="emotion-garden-card">
           <div class="garden-header">
-            <span class="garden-icon">🌸</span>
+            <span class="garden-icon">🌻</span>
             <span>情绪花园</span>
           </div>
           <div class="emotion-display">
@@ -41,9 +76,10 @@
               <span class="emotion-label">{{ currentEmotion.primaryEmotion }}</span>
               <span class="emotion-score">{{ currentEmotion.emotionScore }}</span>
             </div>
+            <div class="emotion-plant" :class="getEmotionPlant(currentEmotion.emotionScore)"></div>
           </div>
           <div class="emotion-status">
-            <span class="status-label">今天感觉</span>
+            <span class="status-label">今日心情</span>
             <span class="status-value" :class="{ 'negative': currentEmotion.isNegative }">
               {{ currentEmotion.isNegative ? '需要关注' : '很不错' }}
             </span>
@@ -60,18 +96,21 @@
             <div class="suggestion-text">{{ currentEmotion.suggestion }}</div>
           </div>
           <div class="action-list" v-if="currentEmotion.improvementSuggestions.length > 0">
-            <div class="action-title">✨ 治愈行动</div>
+            <div class="action-title">🌱 治愈行动</div>
             <div class="action-item" v-for="(action, index) in currentEmotion.improvementSuggestions" :key="index">
+              <span class="action-icon">✨</span>
               {{ action }}
             </div>
           </div>
         </div>
 
+        <!-- 会话记录卡片 -->
         <div class="session-list-card">
           <div class="card-header">
             <span>📜 会话记录</span>
             <el-button class="new-session-btn" @click="createNewFrontendSession" size="small">
               <el-icon><Plus /></el-icon>
+              新对话
             </el-button>
           </div>
           <div class="session-items">
@@ -87,6 +126,10 @@
                 <el-icon><DeleteFilled /></el-icon>
               </el-button>
             </div>
+            <div class="empty-session" v-if="sessionList.length === 0">
+              <span>🌾 还没有会话记录</span>
+              <p>开始一段新的对话吧！</p>
+            </div>
           </div>
         </div>
       </div>
@@ -94,17 +137,23 @@
       <div class="chat-panel">
         <div class="chat-header">
           <div class="header-info">
-            <div class="npc-mini-avatar">
+            <div class="npc-mini-avatar" :class="{ 'talking': isAiTyping }">
               <div class="mini-head"></div>
+              <div class="mini-body"></div>
             </div>
             <div class="header-text">
-              <h2>小暖的咨询室</h2>
-              <p>温暖的对话，治愈的开始</p>
+              <h2>小暖的农场咨询室</h2>
+              <p>在这个温馨的农场里，我们一起度过美好时光</p>
+            </div>
+            <div class="header-decoration">
+              <div class="flower"></div>
+              <div class="flower"></div>
             </div>
           </div>
         </div>
 
         <div class="chat-messages" ref="messagesContainer">
+          <!-- 欢迎消息 -->
           <div class="welcome-message" v-if="messages.length === 0">
             <div class="welcome-npc">
               <div class="npc-avatar-large">
@@ -118,23 +167,36 @@
                     <div class="npc-mouth-large smile"></div>
                   </div>
                 </div>
-                <div class="npc-body-large"></div>
+                <div class="npc-body-large">
+                  <div class="npc-arm-large left"></div>
+                  <div class="npc-arm-large right"></div>
+                </div>
+                <div class="npc-legs-large">
+                  <div class="npc-leg-large left"></div>
+                  <div class="npc-leg-large right"></div>
+                </div>
+              </div>
+              <div class="welcome-animals">
+                <div class="chicken"></div>
+                <div class="dog"></div>
               </div>
             </div>
             <div class="speech-bubble welcome">
               <div class="bubble-content">
-                <p>您好！我是小暖，您的AI心理健康助手。很高兴陪伴您，为您提供温暖的心理支持。请告诉我，今天您感觉怎么样？有什么想要分享的吗？</p>
+                <p>欢迎来到小暖的农场！我是你的AI心理健康助手小暖。在这里，我们可以像朋友一样聊天，分享你的心情和烦恼。今天你感觉怎么样？有什么想要告诉我吗？</p>
               </div>
               <div class="bubble-tail"></div>
             </div>
           </div>
 
+          <!-- 聊天消息 -->
           <div v-for="msg in messages" :key="msg.id" 
                class="message-row"
                :class="msg.senderType === 1 ? 'user-row' : 'npc-row'">
             <div class="npc-mini" v-if="msg.senderType === 2">
               <div class="mini-avatar-npc" :class="{ 'talking': isAiTyping && msg === messages[messages.length - 1] }">
                 <div class="mini-head-npc"></div>
+                <div class="mini-body-npc"></div>
               </div>
             </div>
             
@@ -150,11 +212,13 @@
                 <p v-else v-html="formatMessageContent(msg.content)"></p>
               </div>
               <div class="bubble-tail" v-if="msg.senderType === 1"></div>
+              <div class="bubble-tail npc-tail" v-else></div>
             </div>
             
             <div class="user-mini" v-if="msg.senderType === 1">
               <div class="mini-avatar-user">
                 <div class="mini-head-user"></div>
+                <div class="mini-body-user"></div>
               </div>
             </div>
           </div>
@@ -168,26 +232,27 @@
               :rows="3"
               :disabled="isAiTyping"
               @keydown="handleKeyDown"
-              placeholder="写下你想说的话..."
+              placeholder="在这个农场里，你想和小暖说些什么呢..."
               class="stardew-input"
               maxlength="500"
               show-word-limit
             />
             <div class="input-hint">
-              <span>Enter 发送 | Shift+Enter 换行</span>
+              <span>🌾 Enter 发送 | Shift+Enter 换行</span>
             </div>
           </div>
           <el-button 
             class="send-btn" 
             :disabled="!userMessage.trim() || isAiTyping || userMessage.length > 500"
             @click="sendMessage">
+            <span class="btn-icon">🚜</span>
             <span class="btn-text">发送</span>
-            <span class="btn-icon">✉️</span>
           </el-button>
         </div>
       </div>
     </div>
     
+    <!-- 像素边框 -->
     <div class="pixel-border top"></div>
     <div class="pixel-border bottom"></div>
   </div>
@@ -263,6 +328,13 @@ const getRiskTest = (riskLevel) => {
     case '3': return '危机'
     default: return '未知'
   }
+}
+
+const getEmotionPlant = (score) => {
+  if (score >= 70) return 'flower'
+  if (score >= 50) return 'sapling'
+  if (score >= 30) return 'seed'
+  return 'wilted'
 }
 
 const handleKeyDown = (e) => {
