@@ -1,10 +1,16 @@
 <template>
   <div class="stardew-layout">
+    <!-- 装饰元素 -->
+    <div class="decorative-elements">
+      <div class="floating-cloud" v-for="i in 3" :key="`cloud-${i}`" :style="{ animationDelay: `${i * 0.5}s` }"></div>
+      <div class="floating-butterfly" v-for="i in 2" :key="`butterfly-${i}`" :style="{ animationDelay: `${i * 1}s` }"></div>
+    </div>
+    
     <div class="navbar">
       <div class="navbar-inner">
         <div class="brand-section">
           <div class="brand-logo">
-            <div class="logo-character">
+            <div class="logo-character animated">
               <div class="logo-head">
                 <div class="logo-hair"></div>
                 <div class="logo-face">
@@ -16,6 +22,10 @@
                 </div>
               </div>
               <div class="logo-body"></div>
+              <div class="logo-arms">
+                <div class="logo-arm left"></div>
+                <div class="logo-arm right"></div>
+              </div>
             </div>
           </div>
           <div class="brand-text">
@@ -28,38 +38,43 @@
           <router-link to="/" class="nav-link" :class="{ 'active': $route.path === '/' }">
             <span class="nav-icon">🏠</span>
             <span class="nav-text">首页</span>
+            <div class="nav-decoration"></div>
           </router-link>
           <router-link to="/consultation" class="nav-link" v-if="isLoggedIn" :class="{ 'active': $route.path === '/consultation' }">
             <span class="nav-icon">💬</span>
             <span class="nav-text">AI咨询</span>
+            <div class="nav-decoration"></div>
           </router-link>
           <router-link to="/emotion-diary" class="nav-link" v-if="isLoggedIn" :class="{ 'active': $route.path === '/emotion-diary' }">
             <span class="nav-icon">📔</span>
             <span class="nav-text">情绪日记</span>
+            <div class="nav-decoration"></div>
           </router-link>
           <router-link to="/knowledge" class="nav-link" :class="{ 'active': $route.path === '/knowledge' }">
             <span class="nav-icon">📚</span>
             <span class="nav-text">知识库</span>
+            <div class="nav-decoration"></div>
           </router-link>
         </div>
         
         <div class="auth-section">
           <div class="user-info" v-if="isLoggedIn">
-            <div class="user-avatar">
+            <div class="user-avatar animated">
               <div class="user-head"></div>
+              <div class="user-hat"></div>
             </div>
             <span class="user-name">{{ userName }}</span>
-            <button class="logout-btn" @click="logoutClick">
+            <button class="logout-btn animated" @click="logoutClick">
               <span class="btn-icon">🚪</span>
               <span>退出</span>
             </button>
           </div>
           <div class="auth-buttons" v-else>
-            <router-link to="/auth/login" class="auth-link login">
+            <router-link to="/auth/login" class="auth-link login animated">
               <span class="auth-icon">🔑</span>
               <span>登录</span>
             </router-link>
-            <router-link to="/auth/register" class="auth-link register">
+            <router-link to="/auth/register" class="auth-link register animated">
               <span class="auth-icon">✨</span>
               <span>注册</span>
             </router-link>
@@ -74,6 +89,12 @@
     
     <div class="footer">
       <div class="footer-inner">
+        <div class="footer-farm">
+          <div class="farm-elements">
+            <div class="farm-crop" v-for="i in 5" :key="`crop-${i}`" :style="{ animationDelay: `${i * 0.3}s` }"></div>
+            <div class="farm-fence"></div>
+          </div>
+        </div>
         <div class="footer-decor">
           <span>🌻</span>
           <span>🌸</span>
@@ -95,6 +116,7 @@
     </div>
     
     <div class="pixel-border top"></div>
+    <div class="pixel-border bottom"></div>
   </div>
 </template>
 
@@ -132,8 +154,89 @@ const logoutClick = () => {
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #E3F2FD 0%, #E8F5E9 50%, #FFF8E1 100%);
+  position: relative;
+  overflow: hidden;
 }
 
+/* 装饰元素 */
+.decorative-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floating-cloud {
+  position: absolute;
+  top: 20px;
+  width: 80px;
+  height: 30px;
+  background: white;
+  border-radius: 50px;
+  animation: cloud-float 15s linear infinite;
+  
+  &:nth-child(1) {
+    left: 10%;
+  }
+  
+  &:nth-child(2) {
+    left: 40%;
+    top: 40px;
+    width: 60px;
+    height: 25px;
+  }
+  
+  &:nth-child(3) {
+    left: 70%;
+    top: 30px;
+    width: 70px;
+    height: 28px;
+  }
+}
+
+.floating-butterfly {
+  position: absolute;
+  top: 80px;
+  font-size: 20px;
+  animation: butterfly-fly 8s ease-in-out infinite;
+  
+  &:nth-child(1) {
+    left: 20%;
+  }
+  
+  &:nth-child(2) {
+    left: 60%;
+  }
+}
+
+@keyframes cloud-float {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100vw);
+  }
+}
+
+@keyframes butterfly-fly {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(-5deg);
+  }
+}
+
+/* 导航栏 */
 .navbar {
   background: linear-gradient(180deg, #81C784 0%, #4CAF50 100%);
   border-bottom: 4px solid #5D4037;
@@ -147,7 +250,7 @@ const logoutClick = () => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
-  height: 70px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -164,6 +267,7 @@ const logoutClick = () => {
     display: flex;
     flex-direction: column;
     align-items: center;
+    animation: bounce 2s ease-in-out infinite;
   }
   
   .logo-head {
@@ -223,16 +327,61 @@ const logoutClick = () => {
     border-radius: 6px 6px 4px 4px;
     margin-top: -2px;
   }
+  
+  .logo-arms {
+    position: absolute;
+    top: 40px;
+    width: 60px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .logo-arm {
+    width: 12px;
+    height: 20px;
+    background: #FFCC80;
+    border: 2px solid #5D4037;
+    border-radius: 6px;
+    animation: wave 2s ease-in-out infinite;
+  }
+  
+  .logo-arm.left {
+    transform-origin: right center;
+  }
+  
+  .logo-arm.right {
+    transform-origin: left center;
+    animation-delay: 1s;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
 }
 
 .brand-text {
   h1 {
     margin: 0;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 800;
     color: white;
     text-shadow: 2px 2px 0 #2E7D32;
     letter-spacing: 1px;
+    animation: text-glow 3s ease-in-out infinite;
   }
   
   p {
@@ -240,6 +389,15 @@ const logoutClick = () => {
     font-size: 10px;
     color: #E8F5E9;
     letter-spacing: 0.5px;
+  }
+}
+
+@keyframes text-glow {
+  0%, 100% {
+    text-shadow: 2px 2px 0 #2E7D32;
+  }
+  50% {
+    text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -261,6 +419,8 @@ const logoutClick = () => {
   border-radius: 10px;
   border: 3px solid transparent;
   transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
   
   &:hover {
     background: rgba(255, 255, 255, 0.2);
@@ -276,6 +436,22 @@ const logoutClick = () => {
   
   .nav-icon {
     font-size: 18px;
+  }
+  
+  .nav-decoration {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 10px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 10"><path d="M0,10 Q5,0 10,10 Q15,0 20,10" fill="none" stroke="%235D4037" stroke-width="2"/></svg>') no-repeat center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  &.active .nav-decoration {
+    opacity: 1;
   }
 }
 
@@ -299,6 +475,17 @@ const logoutClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: bounce 2s ease-in-out infinite;
+  
+  .user-hat {
+    position: absolute;
+    top: -8px;
+    width: 20px;
+    height: 12px;
+    background: #E91E63;
+    border: 2px solid #5D4037;
+    border-radius: 50% 50% 0 0;
+  }
 }
 
 .user-head {
@@ -329,6 +516,7 @@ const logoutClick = () => {
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 2px 2px 0 #5D4037;
+  animation: pulse 2s ease-in-out infinite;
   
   &:hover {
     transform: translate(1px, 1px);
@@ -337,6 +525,15 @@ const logoutClick = () => {
   
   .btn-icon {
     font-size: 16px;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
   }
 }
 
@@ -356,6 +553,7 @@ const logoutClick = () => {
   border-radius: 10px;
   border: 3px solid #5D4037;
   transition: all 0.15s ease;
+  animation: pulse 2s ease-in-out infinite;
   
   .auth-icon {
     font-size: 16px;
@@ -386,12 +584,16 @@ const logoutClick = () => {
 
 .main-content {
   flex: 1;
+  position: relative;
+  z-index: 10;
 }
 
+/* 页脚 */
 .footer {
   background: linear-gradient(180deg, #5D4037 0%, #3E2723 100%);
   border-top: 4px solid #8D6E63;
   padding: 20px 0;
+  position: relative;
 }
 
 .footer-inner {
@@ -399,6 +601,63 @@ const logoutClick = () => {
   margin: 0 auto;
   padding: 0 20px;
   text-align: center;
+}
+
+.footer-farm {
+  margin-bottom: 15px;
+  height: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.farm-elements {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 15px;
+  position: relative;
+}
+
+.farm-crop {
+  width: 20px;
+  height: 30px;
+  background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+  border: 2px solid #5D4037;
+  border-radius: 5px 5px 0 0;
+  position: relative;
+  animation: crop-grow 3s ease-in-out infinite;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 25px;
+    height: 15px;
+    background: #81C784;
+    border-radius: 50%;
+  }
+}
+
+.farm-fence {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: repeating-linear-gradient(90deg, 
+    #8D6E63 0px, #8D6E63 10px,
+    #5D4037 10px, #5D4037 12px);
+}
+
+@keyframes crop-grow {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.1);
+  }
 }
 
 .footer-decor {
@@ -434,8 +693,10 @@ const logoutClick = () => {
   margin: 10px 0;
   font-size: 14px;
   color: #D7CCC8;
+  text-shadow: 1px 1px 0 #3E2723;
 }
 
+/* 像素边框 */
 .pixel-border {
   position: fixed;
   left: 0;
@@ -447,8 +708,10 @@ const logoutClick = () => {
   z-index: 1001;
   
   &.top { top: 0; }
+  &.bottom { bottom: 0; }
 }
 
+/* 响应式设计 */
 @media (max-width: 900px) {
   .navbar-inner {
     flex-wrap: wrap;
@@ -471,6 +734,48 @@ const logoutClick = () => {
   
   .brand-text h1 {
     font-size: 18px;
+  }
+  
+  .decorative-elements {
+    height: 150px;
+  }
+  
+  .floating-cloud {
+    width: 60px;
+    height: 25px;
+  }
+  
+  .floating-butterfly {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar-inner {
+    padding: 10px;
+  }
+  
+  .brand-logo .logo-character {
+    transform: scale(0.8);
+  }
+  
+  .brand-text h1 {
+    font-size: 16px;
+  }
+  
+  .nav-link {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .auth-link {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 </style>
