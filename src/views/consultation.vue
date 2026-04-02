@@ -1,266 +1,269 @@
 <template>
-  <div class="consultation-container">
-    <div class="sidebar">
-      <div class="ai-assistant-info">
-        <div class="breathing-circle">
-          <el-image :src="iconUrl" style="width: 25px;height:25px" alt="AI助手" />
-        </div>
-        <h3 class="assistant-name">宁波AI助手</h3>
-        <div class="online-status">
-          <div class="status-dot"></div>
-          在线服务中
-        </div>
-      </div>
-      <!-- 情绪花园 -->
-       <div class="emotion-garden">
-        <div class="garden-header">
-            <div class="garden-title">情绪花园</div>
-        </div>
-        <div class="emotion-info">
-            <div class="emotion-name">中性</div>
-            <div class="emotion-score">50</div>
-        </div>
-        <div class="warm-tips">
-            <div class="emotion-status-text">
-                <span class="status-label">今天感觉</span>
-                <span class="status-emotion">{{currentEmotion.isNegative?'需要关注':'很不错'}}</span>
-                
-            </div> 
-            <div class="emotion-intensity">
-                <span class="intensity-dots">
-                    <span class="dot" v-for="dot in 3" :key="dot" :class="{'active': getIntensityClass(currentEmotion.emotionScore)>=dot}"></span>
-                </span>
-                <span class="intensity-text">{{getRiskTest(currentEmotion.riskLevel)}}</span>
-            </div>
-            <!-- 温馨建议卡片 -->
-            <div class="warm-suggestion" v-if="currentEmotion.suggestion">
-                <div class="suggestion-icon">💝</div>
-                <div class="suggestion-content">
-                    <div class="suggestion-title">给你的小建议</div>
-                    <div class="suggestion-text">{{currentEmotion.suggestion}}</div>
-                </div>
-            </div>
-            <!-- 治愈行动清单 -->
-             <div class="healing-actions"v-if="currentEmotion.improvementSuggestions.length>0">
-                <div class="actions-title">治愈行动清单</div>
-                <div class="actions-list">
-                    <div v-for="action in currentEmotion.improvementSuggestions" :key="action" class="action-item">
-                        <div class="action-icon">✨</div>
-                        <div class="action-text">{{action}}</div>
-                    </div>
-                </div>
-             </div>
-             <!-- 风险提示 -->
-             <div class="risk-notice" v-if="currentEmotion.isNegative||currentEmotion.riskLevel>1">
-                <div class="notice-icon">🤗</div>
-                <div class="notice-content">
-                    <div class="notice-title">温馨提示</div>
-                    <div class="notice-text">{{currentEmotion.riskDescription}}</div>
-                </div>
-             </div>
-        </div>
-       </div>
-      <!-- 会话列表 -->
-      <div class="session-history">
-        <h4 class="section-title">会话列表</h4>
-        <div class="session-list">
-            <div class="session-item" v-for="item in sessionList" :key="item.id" @click="handleSessionClick(item)">
-               <div class="session-info">
-                    <div class="session-title">
-                        <span>{{item.sessionTitle}}</span>
-                        <div class="session-meta">
-                            <span class="session-time">{{item.startedAt}}</span>
-                        </div>
-                        <div class="session-preview">
-                            {{item.lastMessageContent}}
-                        </div>
-                        <div class="session-stats">
-                            <span>
-                                <el-icon>
-                                    <ChatRound />
-                                </el-icon>
-                                <span>{{item.messageCount||0}}</span>
-                            </span>
-                            <span>
-                                <el-icon>
-                                    <Clock />
-                                </el-icon>
-                                <span>{{item.durationMinutes||0}}</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="session-actions">
-                        <!-- //删除 -->
-                        <el-button text type="danger" size="small" @click="handleDeleteSession(item.id)">
-                            <el-icon>
-                                <DeleteFilled />
-                            </el-icon>
-                        </el-button>
-                    </div>
-               </div>
-            </div>
-        </div>
-      </div>
+  <div class="stardew-consultation">
+    <div class="sky-bg">
+      <div class="sun-mini"></div>
+      <div class="cloud-mini cloud-m1"></div>
+      <div class="cloud-mini cloud-m2"></div>
     </div>
-    <div class="chat-main">
-      <div class="chat-header">
-        <div class="cheader-left">
-          <div class="chat-avatar">
-            <el-image :src="iconUrl1" style="width: 30px;height:30px" />
+    
+    <div class="game-container">
+      <div class="left-panel">
+        <div class="npc-card">
+          <div class="npc-avatar" :class="{ 'talking': isAiTyping }">
+            <div class="npc-head">
+              <div class="npc-hair"></div>
+              <div class="npc-face">
+                <div class="npc-eyes">
+                  <div class="npc-eye"></div>
+                  <div class="npc-eye"></div>
+                </div>
+                <div class="npc-mouth" :class="{ 'talking': isAiTyping }"></div>
+              </div>
+            </div>
+            <div class="npc-body"></div>
           </div>
-          <div class="chat-info">
-            <h2>宁波AI助手</h2>
-            <p>您的贴心AI心理健康助手</p>
+          <div class="npc-info">
+            <h3>小暖</h3>
+            <div class="status-badge">
+              <span class="status-dot"></span>
+              在线服务中
+            </div>
           </div>
         </div>
-        <el-button circle @click="createNewFrontendSession" title="新建会话">
-          <el-icon>
-            <Plus />
-          </el-icon>
-        </el-button>
-      </div>
 
-      <div class="chat-messages">
-        <div class="message-item ai-message" v-if="messages.length === 0">
-          <div class="message-avatar">
-            <el-image :src="iconUrl" style="width: 18px;height:18px" />
+        <div class="emotion-garden-card">
+          <div class="garden-header">
+            <span class="garden-icon">🌸</span>
+            <span>情绪花园</span>
           </div>
-          <div class="message-content">
-            <div class="message-bubble">
-              <p>您好！我是小暖，您的AI心理健康助手。很高兴陪伴您，为您提供温暖的心理支持。请告诉我，今天您感觉怎么样？有什么想要分享的吗？</p>
+          <div class="emotion-display">
+            <div class="emotion-circle" :style="{ background: getEmotionColor(currentEmotion.emotionScore) }">
+              <span class="emotion-label">{{ currentEmotion.primaryEmotion }}</span>
+              <span class="emotion-score">{{ currentEmotion.emotionScore }}</span>
             </div>
-            <div class="message-time">刚刚</div>
+          </div>
+          <div class="emotion-status">
+            <span class="status-label">今天感觉</span>
+            <span class="status-value" :class="{ 'negative': currentEmotion.isNegative }">
+              {{ currentEmotion.isNegative ? '需要关注' : '很不错' }}
+            </span>
+          </div>
+          <div class="risk-indicator">
+            <div class="risk-dots">
+              <span class="risk-dot" v-for="i in 3" :key="i" 
+                    :class="{ 'active': getIntensityClass(currentEmotion.emotionScore) >= i }"></span>
+            </div>
+            <span class="risk-text">{{ getRiskTest(currentEmotion.riskLevel) }}</span>
+          </div>
+          <div class="suggestion-box" v-if="currentEmotion.suggestion">
+            <div class="suggestion-icon">💝</div>
+            <div class="suggestion-text">{{ currentEmotion.suggestion }}</div>
+          </div>
+          <div class="action-list" v-if="currentEmotion.improvementSuggestions.length > 0">
+            <div class="action-title">✨ 治愈行动</div>
+            <div class="action-item" v-for="(action, index) in currentEmotion.improvementSuggestions" :key="index">
+              {{ action }}
+            </div>
           </div>
         </div>
-        <!-- 消息列表 -->
-        <div v-for="msg in messages" :key="msg.id" class="message-item" :class="msg.senderType === 1 ? 'user-message' : 'ai-message'">
-          <div class="message-avatar"> 
-            <el-image v-if="msg.senderType === 1" :src="iconUrl2" style="width: 18px;height:18px " />
-            <el-image v-if="msg.senderType === 2" :src="iconUrl" style="width: 18px;height:18px " />
+
+        <div class="session-list-card">
+          <div class="card-header">
+            <span>📜 会话记录</span>
+            <el-button class="new-session-btn" @click="createNewFrontendSession" size="small">
+              <el-icon><Plus /></el-icon>
+            </el-button>
           </div>
-          <div class="message-content">
-               <div class="message-bubble">
-               <!-- ai正在思考中 -->
-               <div v-if="msg.senderType === 2&& isAiTyping &&!msg.content" class="typing-indicator">
-               </div> 
-               <!-- ai错误提示 -->
-               <div v-else-if="msg.isError" class="error-message">
-                   <p>{{msg.content}}</p>
-               </div> 
-               <!-- ai正常回复 -->
-               <MarkdownRenderer v-else-if="msg.senderType === 2&&!msg.isError" :content="msg.content" :is-ai-message="true" />
-               <p v-else-if="msg.content" v-html="formatMessageContent(msg.content)"></p>
+          <div class="session-items">
+            <div class="session-item" v-for="item in sessionList" :key="item.id" 
+                 @click="handleSessionClick(item)"
+                 :class="{ 'active': currentSession?.sessionId === 'session_' + item.id }">
+              <div class="session-title">{{ item.sessionTitle }}</div>
+              <div class="session-meta">
+                <span>{{ item.startedAt }}</span>
+                <span class="session-count">💬 {{ item.messageCount || 0 }}</span>
+              </div>
+              <el-button class="delete-btn" text size="small" @click.stop="handleDeleteSession(item.id)">
+                <el-icon><DeleteFilled /></el-icon>
+              </el-button>
             </div>
-               <div class="message-time">{{ msg.senderType===2&&isAiTyping?'AI助手正在输入中':msg.createdAt }}</div>   
           </div>
         </div>
       </div>
 
-      <div class="chat-input">
-        <div class="input-container">
-          <el-input
-            v-model="userMessage"
-            placeholder="请输入您想要分享的内容..."
-            type="textarea"
-            :rows="3"
-            :disabled="isAiTyping"
-            @keydown="handleKeyDown"
-            class="message-input"
-            clearable />
-            <div class="input-footer">
-               <span>按enter发送，Shift+Enter换行</span>
-               <span>{{ userMessage.length }}/500 个字符</span>
+      <div class="chat-panel">
+        <div class="chat-header">
+          <div class="header-info">
+            <div class="npc-mini-avatar">
+              <div class="mini-head"></div>
             </div>
+            <div class="header-text">
+              <h2>小暖的咨询室</h2>
+              <p>温暖的对话，治愈的开始</p>
+            </div>
+          </div>
         </div>
-        <el-button :disabled="!userMessage.trim()||isAiTyping||userMessage.length>500" type="primary" class="send-btn" @click="sendMessage">
-          <el-icon>
-            <Promotion />
-          </el-icon>
-        </el-button>
+
+        <div class="chat-messages" ref="messagesContainer">
+          <div class="welcome-message" v-if="messages.length === 0">
+            <div class="welcome-npc">
+              <div class="npc-avatar-large">
+                <div class="npc-head-large">
+                  <div class="npc-hair-large"></div>
+                  <div class="npc-face-large">
+                    <div class="npc-eyes-large">
+                      <div class="npc-eye-large"></div>
+                      <div class="npc-eye-large"></div>
+                    </div>
+                    <div class="npc-mouth-large smile"></div>
+                  </div>
+                </div>
+                <div class="npc-body-large"></div>
+              </div>
+            </div>
+            <div class="speech-bubble welcome">
+              <div class="bubble-content">
+                <p>您好！我是小暖，您的AI心理健康助手。很高兴陪伴您，为您提供温暖的心理支持。请告诉我，今天您感觉怎么样？有什么想要分享的吗？</p>
+              </div>
+              <div class="bubble-tail"></div>
+            </div>
+          </div>
+
+          <div v-for="msg in messages" :key="msg.id" 
+               class="message-row"
+               :class="msg.senderType === 1 ? 'user-row' : 'npc-row'">
+            <div class="npc-mini" v-if="msg.senderType === 2">
+              <div class="mini-avatar-npc" :class="{ 'talking': isAiTyping && msg === messages[messages.length - 1] }">
+                <div class="mini-head-npc"></div>
+              </div>
+            </div>
+            
+            <div class="speech-bubble" :class="msg.senderType === 1 ? 'user' : 'npc'">
+              <div class="bubble-content">
+                <div v-if="msg.senderType === 2 && isAiTyping && !msg.content" class="typing-dots">
+                  <span></span><span></span><span></span>
+                </div>
+                <div v-else-if="msg.isError" class="error-text">
+                  😢 {{ msg.content }}
+                </div>
+                <MarkdownRenderer v-else-if="msg.senderType === 2" :content="msg.content" :is-ai-message="true" />
+                <p v-else v-html="formatMessageContent(msg.content)"></p>
+              </div>
+              <div class="bubble-tail" v-if="msg.senderType === 1"></div>
+            </div>
+            
+            <div class="user-mini" v-if="msg.senderType === 1">
+              <div class="mini-avatar-user">
+                <div class="mini-head-user"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="input-wrapper">
+            <el-input
+              v-model="userMessage"
+              type="textarea"
+              :rows="3"
+              :disabled="isAiTyping"
+              @keydown="handleKeyDown"
+              placeholder="写下你想说的话..."
+              class="stardew-input"
+              maxlength="500"
+              show-word-limit
+            />
+            <div class="input-hint">
+              <span>Enter 发送 | Shift+Enter 换行</span>
+            </div>
+          </div>
+          <el-button 
+            class="send-btn" 
+            :disabled="!userMessage.trim() || isAiTyping || userMessage.length > 500"
+            @click="sendMessage">
+            <span class="btn-text">发送</span>
+            <span class="btn-icon">✉️</span>
+          </el-button>
+        </div>
       </div>
     </div>
+    
+    <div class="pixel-border top"></div>
+    <div class="pixel-border bottom"></div>
   </div>
 </template>
 
-
 <script setup>
-import { ref,onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus';
-import { ChatRound, Clock, DeleteFilled, Plus, Promotion } from '@element-plus/icons-vue';
-import { startSession, getSessionList, deleteSession,getSessionMessages } from '@/api/frontend';
+import { DeleteFilled, Plus } from '@element-plus/icons-vue';
+import { startSession, getSessionList, deleteSession, getSessionMessages, getSessionEmotion } from '@/api/frontend';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { fetchEventSource } from '@microsoft/fetch-event-source'
-import { getSessionEmotion } from '@/api/frontend'
 
-const iconUrl = new URL('@/assets/images/robot-fill.png', import.meta.url).href
-const iconUrl1 = new URL('@/assets/images/like.png', import.meta.url).href
-const iconUrl2 = new URL('@/assets/images/users.png', import.meta.url).href
-
-const messages = ref([]) // 聊天消息数组
-const userMessage = ref('')//用户输入的消息
-const isAiTyping = ref(false)//是否正在输入中
-
-const createNewFrontendSession = () => {
-  const createNewSession={
-    sessionId:`temp_${Date.now()}`,
-    status:'TEMP',
-    sessionTitle:'新对话',
-}
-currentSession.value=createNewSession
-}
-
+const messagesContainer = ref(null)
+const messages = ref([])
+const userMessage = ref('')
+const isAiTyping = ref(false)
 const currentSession = ref(null)
 const sessionList = ref([])
 
-//情绪花园数据
 const currentEmotion = ref({
-    primaryEmotion:'中性',
-    emotionScore:50,
-    isNegative:false,
-    suggestion:'情绪状态平稳',
-    riskLevel:'0',
-    improvementSuggestions:[],
-    riskDescription:'',
-    
+  primaryEmotion: '中性',
+  emotionScore: 50,
+  isNegative: false,
+  suggestion: '情绪状态平稳',
+  riskLevel: '0',
+  improvementSuggestions: [],
+  riskDescription: '',
 })
-//获取情绪花园数据
-const fetchSessionEmotion=(sessionId)=>{
-    const id= sessionId.toString().startsWith('session_')?sessionId:`session_${sessionId}`
 
-    getSessionEmotion(id).then(res=>{
-        console.log(res,'获取情绪花园数据')
-        currentEmotion.value=res
-    })
-}
-//获取dot的class
-const getIntensityClass=(score)=>{
-    if(score>=61){
-        return 3
-    }
-    if(score>=31){
-        return 2
-    }
-    else{
-        return 1
-    }
-}
-//获取风险等级
-const getRiskTest=(riskLevel)=>{
-    switch(riskLevel){
-        case '0':
-            return '正常'
-        case '1':
-            return '关注'
-        case '2':
-            return '预警'
-        case '3':
-            return '危机'
-        default:
-            return '未知风险'
-    }
+const createNewFrontendSession = () => {
+  const createNewSession = {
+    sessionId: `temp_${Date.now()}`,
+    status: 'TEMP',
+    sessionTitle: '新对话',
+  }
+  currentSession.value = createNewSession
 }
 
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  })
+}
 
+const getEmotionColor = (score) => {
+  if (score >= 70) return 'linear-gradient(135deg, #81C784 0%, #4CAF50 100%)'
+  if (score >= 50) return 'linear-gradient(135deg, #FFD54F 0%, #FFC107 100%)'
+  if (score >= 30) return 'linear-gradient(135deg, #FFB74D 0%, #FF9800 100%)'
+  return 'linear-gradient(135deg, #E57373 0%, #F44336 100%)'
+}
+
+const fetchSessionEmotion = (sessionId) => {
+  const id = sessionId.toString().startsWith('session_') ? sessionId : `session_${sessionId}`
+  getSessionEmotion(id).then(res => {
+    currentEmotion.value = res
+  })
+}
+
+const getIntensityClass = (score) => {
+  if (score >= 61) return 3
+  if (score >= 31) return 2
+  return 1
+}
+
+const getRiskTest = (riskLevel) => {
+  switch (riskLevel) {
+    case '0': return '正常'
+    case '1': return '关注'
+    case '2': return '预警'
+    case '3': return '危机'
+    default: return '未知'
+  }
+}
 
 const handleKeyDown = (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -268,710 +271,1032 @@ const handleKeyDown = (e) => {
     sendMessage();
   }
 }
-//用户发送信息
-const sendMessage=()=>{
-    if(!userMessage.value.trim()) return
-    if(isAiTyping.value) {
-        ElMessage.error('AI助手正在输入中，请稍后');
-        return;
-    }
-    const message=userMessage.value.trim()
-    userMessage.value=''
-   if(currentSession.value.status === 'TEMP'){
+
+const sendMessage = () => {
+  if (!userMessage.value.trim()) return
+  if (isAiTyping.value) {
+    ElMessage.error('小暖正在输入中，请稍后');
+    return;
+  }
+  const message = userMessage.value.trim()
+  userMessage.value = ''
+  
+  if (currentSession.value.status === 'TEMP') {
     startNewMessage(message)
-   }
-   else{//继续现有对话
+  } else {
     messages.value.push({
-        id: Date.now(),
-        senderType: 1,
-        content: message,
-        createdAt: new Date().toISOString()
-    }) 
-    startAIResponse(currentSession.value.sessionId,message) 
-    
-   }
-
-
-}
-const startNewMessage=(message)=>{
-    //构建会话参数
-    const sessionParams={
-        initialMessage:message,//初始消息
-    }
-    if(currentSession.value.sessionTitle==='新对话'){
-        sessionParams.sessionTitle=`宁度ai助手_${new Date().toLocaleString()}`//设置会话标题
-    }else{
-        //如果是历史会画记录，会话标题不变
-        sessionParams.sessionTitle=currentSession.value.sessionTitle
-    }
-    //调用后端接口进行对话
-    startSession(sessionParams).then(res=>{
-        //将后端返回的数据定义为前端的格式
-        const sesssionData={
-            sessionId:res.sessionId,
-            status:res.status,
-            sessionTitle:sessionParams.sessionTitle,
-        }
-        if(currentSession.value&&currentSession.value.status==='TEMP'){
-            Object.assign(currentSession.value,sesssionData)
-        }else{
-            currentSession.value=sesssionData
-        }
-        getSessionPage()//更新会话列表//流式对话
-        //添加用户初始会话信息
-        messages.value.push({
-            id: Date.now(),
-            senderType: 1,
-            content: message,
-            createdAt: new Date().toISOString()
-        })
-        startAIResponse(currentSession.value.sessionId,message)
-
+      id: Date.now(),
+      senderType: 1,
+      content: message,
+      createdAt: new Date().toISOString()
     })
+    scrollToBottom()
+    startAIResponse(currentSession.value.sessionId, message)
+  }
 }
 
-const startAIResponse=(sessionId,userMessage)=>{
-    if(isAiTyping.value) {
-        ElMessage.error('AI助手正在输入中，请稍后');
+const startNewMessage = (message) => {
+  const sessionParams = {
+    initialMessage: message,
+  }
+  if (currentSession.value.sessionTitle === '新对话') {
+    sessionParams.sessionTitle = `小暖的对话_${new Date().toLocaleString()}`
+  } else {
+    sessionParams.sessionTitle = currentSession.value.sessionTitle
+  }
+  
+  startSession(sessionParams).then(res => {
+    const sesssionData = {
+      sessionId: res.sessionId,
+      status: res.status,
+      sessionTitle: sessionParams.sessionTitle,
+    }
+    if (currentSession.value && currentSession.value.status === 'TEMP') {
+      Object.assign(currentSession.value, sesssionData)
+    } else {
+      currentSession.value = sesssionData
+    }
+    getSessionPage()
+    messages.value.push({
+      id: Date.now(),
+      senderType: 1,
+      content: message,
+      createdAt: new Date().toISOString()
+    })
+    scrollToBottom()
+    startAIResponse(currentSession.value.sessionId, message)
+  })
+}
+
+const startAIResponse = (sessionId, userMessage) => {
+  if (isAiTyping.value) {
+    ElMessage.error('小暖正在输入中，请稍后');
+    return
+  }
+
+  isAiTyping.value = true
+
+  const aiMessage = {
+    id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    senderType: 2,
+    content: '',
+    createdAt: new Date().toISOString()
+  }
+  messages.value.push(aiMessage)
+  scrollToBottom()
+  
+  const controller = new AbortController();
+
+  fetchEventSource('/api/psychological-chat/stream', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Token: localStorage.getItem('token'),
+      accept: 'text/event-stream',
+    },
+    body: JSON.stringify({
+      sessionId,
+      userMessage,
+    }),
+    signal: controller.signal,
+    onopen: (response) => {
+      if (response.headers.get('Content-Type') !== 'text/event-stream') {
+        ElMessage.error('服务器返回非事件流格式')
+        controller.abort()
         return
+      }
+    },
+    onmessage: (event) => {
+      const raw = event.data.trim()
+      if (!raw) return
+      const eventName = event.event
+      const aiMessage = messages.value[messages.value.length - 1]
+      
+      if (eventName === 'done') {
+        isAiTyping.value = false
+        controller.abort()
+        fetchSessionEmotion(currentSession.value.sessionId)
+        scrollToBottom()
+        return
+      }
+      
+      const payload = JSON.parse(raw)
+      const ok = String(payload.code) === '200'
+      if (ok && payload.data && payload.data.content) {
+        aiMessage.content += payload.data.content
+        scrollToBottom()
+      } else if (!ok) {
+        handleError(payload.message || '服务器错误')
+      }
+    },
+    onerror: (err) => {
+      handleError('AI回复失败，请重试')
+      throw err
+    },
+    onclose: () => {
+      fetchSessionEmotion(currentSession.value.sessionId)
     }
-
-    isAiTyping.value = true
-
-    const aiMessage = {
-        id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        senderType: 2,
-        content: '',
-        createdAt: new Date().toISOString()
-    }
-    messages.value.push(aiMessage)
-    const controller = new AbortController();
-
-    fetchEventSource('/api/psychological-chat/stream',{
-        method:'POST',
-        headers: {
-            'Content-Type':'application/json',
-            Token:localStorage.getItem('token'),
-            accept:'text/event-stream',
-        },
-        body:JSON.stringify({
-            sessionId,
-            userMessage,
-        }),
-        signal: controller.signal,
-        onopen: (response) => {
-             if(response.headers.get('Content-Type')!=='text/event-stream'){
-                ElMessage.error('服务器返回非事件流格式')
-                controller.abort()
-                return
-            }
-        },
-        onmessage:(event)=>{
-            const raw=event.data.trim()
-            if(!raw) return
-            const eventName =event.event
-            const aiMessage= messages.value[messages.value.length-1]
-            if(eventName==='done'){
-                isAiTyping.value = false
-                controller.abort()
-                fetchSessionEmotion(currentSession.value.sessionId)//获取情绪花园数据
-                return
-            }
-            const payload=JSON.parse(raw)
-            const ok=String(payload.code)==='200'  
-            if(ok&&payload.data&&payload.data.content){
-                aiMessage.content+=payload.data.content
-            } else if (!ok) {
-                //错误提示显示
-                handleError(payload.message||'服务器错误')
-            }
-        },
-        onerror:(err)=>{
-            handleError(error||'ai回复失败，请重试')
-            throw err
-        },
-        onclose:()=>{
-            //开始情绪分析
-            fetchSessionEmotion(currentSession.value.sessionId)
-        }
-    })
-
-}
-//错误处理函数
-const handleError=(error)=>{
-    const aiMessage= messages.value[messages.value.length-1]
-    if(aiMessage){
-        aiMessage.content="ai回复失败，请重试"
-    }
-    isAiTyping.value = false
-    ElMessage.error("ai回复失败，请重试")
-}
-//获取会话列表
-const getSessionPage=()=>{
-    getSessionList({
-        pageNum:1,
-        pageSize:10,
-    }).then(res=>{
-        sessionList.value=res.records
-    })
-}
-// 获取会话数据
-const handleSessionClick=(item)=>{
-    getSessionMessages(item.id).then(res=>{
-        messages.value=res
-    })
-    fetchSessionEmotion(item.id)
-    const sessionData={
-        sessionId:"session_"+item.id,
-        status:"ACTIVE",
-        sessionTitle:item.sessionTitle,
-    }
-    currentSession.value=sessionData
-}
-//删除会话
-const handleDeleteSession=(sessionId)=>{
-    deleteSession(sessionId).then(res=>{
-        ElMessage.success('删除成功')
-        getSessionPage()//更新会话列表
-    })
+  })
 }
 
-// 简单换行逻辑
-const formatMessageContent=(content)=>{
-    return content.replace(/\n/g,'<br>')
+const handleError = (error) => {
+  const aiMessage = messages.value[messages.value.length - 1]
+  if (aiMessage) {
+    aiMessage.content = "AI回复失败，请重试"
+    aiMessage.isError = true
+  }
+  isAiTyping.value = false
+  ElMessage.error("AI回复失败，请重试")
 }
+
+const getSessionPage = () => {
+  getSessionList({
+    pageNum: 1,
+    pageSize: 10,
+  }).then(res => {
+    sessionList.value = res.records
+  })
+}
+
+const handleSessionClick = (item) => {
+  getSessionMessages(item.id).then(res => {
+    messages.value = res
+    scrollToBottom()
+  })
+  fetchSessionEmotion(item.id)
+  const sessionData = {
+    sessionId: "session_" + item.id,
+    status: "ACTIVE",
+    sessionTitle: item.sessionTitle,
+  }
+  currentSession.value = sessionData
+}
+
+const handleDeleteSession = (sessionId) => {
+  deleteSession(sessionId).then(res => {
+    ElMessage.success('删除成功')
+    getSessionPage()
+  })
+}
+
+const formatMessageContent = (content) => {
+  return content.replace(/\n/g, '<br>')
+}
+
 onMounted(() => {
-    getSessionPage()//初始化时获取会话列表
+  getSessionPage()
   createNewFrontendSession()
 })
 </script>
+
 <style lang="scss" scoped>
-   .consultation-container {
-    margin: 0 auto;
-    width: 1200px;
-    display: flex;
-    gap: 20px;
-    padding: 20px;
-    .sidebar {
-        width: 320px;
-        .ai-assistant-info {
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 252, 248, 0.95) 100%);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 8px 32px rgba(251, 146, 60, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(251, 146, 60, 0.08);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            .breathing-circle {
-                width: 60px;
-                height: 60px;
-                background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 12px;
-                animation: breathing 4s ease-in-out infinite;
-                box-shadow: 0 6px 24px rgba(251, 146, 60, 0.25);
-                position: relative;
-            }
-            .assistant-name {
-                font-size: 16px;
-                font-weight: 700;
-                background: linear-gradient(135deg, #fb923c, #f59e0b);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                text-align: center;
-                background-clip: text;
-                margin: 0 0 12px;
-            }
-            .online-status {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #059669;
-                font-size: 12px;
-                font-weight: 600;
-                .status-dot {
-                    width: 8px;
-                    height: 8px;
-                    background: #059669;
-                    border-radius: 50%;
-                    margin-right: 8px;
-                    animation: pulse 2s infinite;
-                    box-shadow: 0 0 8px rgba(5, 150, 105, 0.4);
-                }
-            }
-        }
-        .session-history {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            .section-title {
-                font-size: 16px;
-                font-weight: 600;
-                color: #333;
-                margin: 0 0 16px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                
-            }
-            .session-list {
-                overflow-y: auto;
-                max-height: 200px;
-                scrollbar-width: thin;
-                scrollbar-color: rgba(64, 150, 255, 0.3) transparent;
-                .session-item {
-                    position: relative;
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 12px;
-                    padding: 12px;
-                    margin-bottom: 8px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    border: 2px solid transparent;
-                    &:hover {
-                        background: #f8f9ff;
-                        border-color: #e6f0ff;
-                    }
-                    &.active {
-                        background: #e6f0ff;
-                        border-color: #4096ff;
-                    }
-                    .session-info {
-                        flex: 1;
-                        .session-title {
-                            font-weight: 500;
-                            font-size: 14px;
-                            color: #333;
-                            margin-bottom: 4px;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            .session-meta {
-                                display: flex;
-                                align-items: center;
-                                gap: 8px;
-                                margin-bottom: 6px;
-                                .session-time {
-                                    font-size: 12px;
-                                    color: #999;
-                                }
-                            }
-                            .session-preview {
-                                width: 200px;
-                                font-size: 12px;
-                                color: #666;
-                                margin-bottom: 6px;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                            }
-                            .session-stats {
-                                display: flex;
-                                align-items: center;
-                                gap: 12px;
-                                span {
-                                    font-size: 12px;
-                                    color: #999;
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 4px;
-                                }
-                            }
-                        }
-                        .session-actions {
-                            position: absolute;
-                            top: 10px;
-                            right: 12px;
-                        }
-                    }
-                }
-                .no-sessions-text {
-                    text-align: center;
-                    font-size: 14px;
-                    color: #999;
-                }
-            }
-        }
-        .emotion-garden {
-            background: linear-gradient(135deg, #fef9e7 0%, #fcf4e6 50%, #f6f0e8 100%);
-            border-radius: 20px;
-            padding: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(252, 244, 230, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-            min-height: 300px;
-            
-            .garden-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 20px;
-                position: relative;
-                z-index: 2;
-                .garden-title {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    color: #8b4513;
-                }
-            }
-            .emotion-info {
-                margin: 0 auto;
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                z-index: 10;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-                border: 2px solid rgba(255, 255, 255, 0.8);
-                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
-                color: #fff;
-                .emotion-name {
-                    font-size: 15px;
-                    font-weight: 600;
-                    line-height: 1;
-                    margin-bottom: 2px;
-                }
-                .emotion-score {
-                    font-size: 14px;
-                    font-weight: 700;
-                    opacity: 0.9;
-                }
-            }
-            .warm-tips {
-                text-align: center;
-                margin-bottom: 16px;
-                .emotion-status-text {
-                    margin-bottom: 12px;
-                    .status-label {
-                        font-size: 14px;
-                        color: #8b7355;
-                        margin-right: 8px;
-                    }
-                    .status-emotion {
-                        font-size: 16px;
-                        font-weight: 600;
-                        padding: 4px 12px;
-                        border-radius: 16px;
-                        display: inline-block;
-                    }
-                }
-                .emotion-intensity {
-                    margin-bottom: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                    .intensity-dots {
-                        display: flex;
-                        gap: 4px;
-                        .dot {
-                            width: 8px;
-                            height: 8px;
-                            border-radius: 50%;
-                            background: #e0e0e0;
-                            transition: all 0.3s ease;
-                            &.active {
-                                background: linear-gradient(135deg, #ff9a9e, #fecfef);
-                                transform: scale(1.2);
-                                box-shadow: 0 2px 8px rgba(255, 154, 158, 0.4);
-                            }
-                        }
-                    }
-                    .intensity-text {
-                        font-size: 12px;
-                        color: #8b7355;
-                        font-weight: 500;
-                    }
-                }
-                .warm-suggestion {
-                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
-                    border-radius: 16px;
-                    padding: 12px;
-                    margin-bottom: 16px;
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 10px;
-                    border: 1px solid rgba(255, 255, 255, 0.6);
-                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-                    .suggestion-icon {
-                        font-size: 20px;
-                        flex-shrink: 0;
-                        margin-top: 2px;
-                    }
-                    .suggestion-content {
-                        text-align: left;
-                        flex: 1;
-                        .suggestion-title {
-                            font-size: 14px;
-                            font-weight: 600;
-                            color: #8b7355;
-                            margin-bottom: 6px;
-                        }
-                        .suggestion-text {
-                            font-size: 13px;
-                            color: #6b5b47;
-                            line-height: 1.5;
-                        }
-                    }
-                }
-                .healing-actions {
-                    margin-bottom: 16px;
-                    .actions-title {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 8px;
-                        font-size: 14px;
-                        font-weight: 600;
-                        color: #8b7355;
-                        margin-bottom: 16px;
-                    }
-                    .actions-list {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 10px;
-                        .action-item {
-                            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-                            border-radius: 12px;
-                            padding: 12px;
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            border: 1px solid rgba(255, 255, 255, 0.5);
-                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-                            text-align: left;
-                            .action-icon {
-                                font-size: 14px;
-                                color: #ffd700;
-                                flex-shrink: 0;
-                            }
-                            .action-text {
-                                font-size: 12px;
-                                color: #6b5b47;
-                                line-height: 1.4;
-                                flex: 1;
-                            }
-                        }
-                    }
-                }
-                .risk-notice {
-                    background: linear-gradient(135deg, #fff9e6, #ffeaa7);
-                    border-radius: 16px;
-                    padding: 16px;
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 12px;
-                    border: 1px solid rgba(255, 234, 167, 0.6);
-                    box-shadow: 0 6px 20px rgba(255, 234, 167, 0.3);
-                    .notice-icon {
-                        font-size: 20px;
-                        flex-shrink: 0;
-                        margin-top: 2px;
-                    }
-                    .notice-content {
-                        flex: 1;
-                        .notice-title {
-                            font-size: 14px;
-                            font-weight: 600;
-                            color: #d4840f;
-                            margin-bottom: 6px;
-                        }
-                        .notice-text {
-                            font-size: 13px;
-                            color: #b8740c;
-                            line-height: 1.5;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    .chat-main {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 252, 250, 0.98) 100%);
-        border-radius: 20px;
-        box-shadow: 0 12px 40px rgba(251, 146, 60, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
-        border: 1px solid rgba(251, 146, 60, 0.1);
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        flex: 1;
-        .chat-header {
-            background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
-            color: white;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            flex-shrink: 0;
-            .header-left {
-                display: flex;
-                align-items: center;
-                .chat-avatar {
-                    width: 48px;
-                    height: 48px;
-                    background: rgba(255, 255, 255, 0.25);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin-right: 16px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                    position: relative;
-                    z-index: 1;
-                }
-                .chat-info {
-                    h2 {
-                        font-size: 20px;
-                        font-weight: 700;
-                        margin-bottom: 4px;
-                    }
-                    p {
-                        font-size: 14px;
-                    }
-                }
-            }
-        }
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 252, 248, 0.05) 100%);
-            min-height: 0;
-            max-height: calc(100vh - 200px);
-            scrollbar-width: thin;
-            scrollbar-color: rgba(251, 146, 60, 0.3) transparent;
-            .message-item {
-                display: flex;
-                align-items: flex-start;
-                gap: 12px;
-                .message-avatar {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 14px;
-                    color: white;
-                    flex-shrink: 0;
-                }
-                &.ai-message {
-                    .message-avatar {
-                        background: linear-gradient(135deg, #fb923c, #f59e0b);
-                        box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
-                    }
-                }
-                &.user-message {
-                    .message-avatar {
-                        background: linear-gradient(135deg, #6b7280, #4b5563);
-                        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
-                    }
-                }
-                .message-content {
-                    max-width: 70%;
-                    .message-bubble {
-                        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 252, 248, 0.95) 100%);
-                        border-radius: 16px;
-                        padding: 12px 16px;
-                        position: relative;
-                        animation: fadeInUp 0.4s ease-out;
-                        border: 1px solid rgba(251, 146, 60, 0.1);
-                        box-shadow: 0 4px 16px rgba(251, 146, 60, 0.05);
-                        .typing-indicator {
-                            display: flex;
-                            gap: 4px;
-                            padding: 8px 0;
-                            .typing-dot {
-                                width: 8px;
-                                height: 8px;
-                                background: #ccc;
-                                border-radius: 50%;
-                                animation: typing 1.5s ease-in-out infinite;
-                                &:nth-child(2) {
-                                    animation-delay: 0.2s;
-                                }
-                                &:nth-child(3) {
-                                    animation-delay: 0.4s;
-                                }   
-                            }
-                        }
-                        /* 错误消息样式 */
-                        .error-message {
-                            background: linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%);
-                            border: 1px solid #F87171;
-                            border-radius: 12px;
-                            padding: 12px 16px;
-                            color: #991B1B;
-                            font-weight: 500;
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                        }
-                    }
-                    .message-time {
-                        font-size: 12px;
-                        color: #999;
-                        margin-top: 4px;
-                    }
-                }
-            }
-        }
-        .chat-input {
-            border-top: 1px solid rgba(251, 146, 60, 0.1);
-            padding: 20px 24px;
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 252, 248, 0.7) 100%);
-            backdrop-filter: blur(10px);
-            flex-shrink: 0;
-            .input-container {
-                flex: 1;
-            }
-            .input-footer {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                font-size: 12px;
-                color: #78716c;
-                font-weight: 500;
-            }
-            .send-btn {
-                height: 60px;
-                width: 60px;
-                border-radius: 16px;
-                background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%) !important;
-                border: none !important;
-                box-shadow: 0 6px 20px rgba(251, 146, 60, 0.25);
-                transition: all 0.3s ease;
-            }
+.stardew-consultation {
+  position: relative;
+  min-height: calc(100vh - 70px);
+  background: linear-gradient(180deg, #87CEEB 0%, #B3E5FC 40%, #C8E6C9 70%, #81C784 100%);
+  overflow: hidden;
+}
 
-        }
+.sky-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  pointer-events: none;
+}
 
+.sun-mini {
+  position: absolute;
+  top: 20px;
+  right: 50px;
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, #FFD54F 0%, #FFC107 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 40px #FFD54F;
+  animation: sunPulse 3s ease-in-out infinite;
+}
+
+@keyframes sunPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.cloud-mini {
+  position: absolute;
+  background: white;
+  border-radius: 30px;
+  opacity: 0.8;
+  
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+}
+
+.cloud-m1 {
+  top: 30px;
+  left: 15%;
+  width: 60px;
+  height: 25px;
+  animation: cloudFloat 12s ease-in-out infinite;
+  
+  &::before { width: 30px; height: 30px; top: -15px; left: 10px; }
+  &::after { width: 20px; height: 20px; top: -8px; left: 30px; }
+}
+
+.cloud-m2 {
+  top: 60px;
+  left: 50%;
+  width: 70px;
+  height: 28px;
+  animation: cloudFloat 15s ease-in-out infinite 2s;
+  
+  &::before { width: 35px; height: 35px; top: -18px; left: 15px; }
+  &::after { width: 25px; height: 25px; top: -10px; left: 40px; }
+}
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(40px); }
+}
+
+.game-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: calc(100vh - 70px);
+}
+
+.left-panel {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.npc-card {
+  background: linear-gradient(180deg, #FFF8E1 0%, #FFECB3 100%);
+  border: 4px solid #5D4037;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 4px 4px 0 #5D4037;
+}
+
+.npc-avatar {
+  display: inline-block;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease;
+  
+  &.talking {
+    animation: npcBounce 0.5s ease-in-out infinite;
+  }
+}
+
+@keyframes npcBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.npc-head {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background: #FFCC80;
+  border-radius: 50% 50% 45% 45%;
+  border: 3px solid #5D4037;
+  margin: 0 auto;
+}
+
+.npc-hair {
+  position: absolute;
+  top: -10px;
+  left: 5px;
+  width: 50px;
+  height: 30px;
+  background: #8D6E63;
+  border-radius: 50% 50% 30% 30%;
+  border: 2px solid #5D4037;
+}
+
+.npc-face {
+  position: absolute;
+  top: 25px;
+  left: 8px;
+  width: 44px;
+}
+
+.npc-eyes {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 5px;
+  margin-bottom: 5px;
+}
+
+.npc-eye {
+  width: 8px;
+  height: 10px;
+  background: #3E2723;
+  border-radius: 50%;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    margin-top: 2px;
+    margin-left: 2px;
+  }
+}
+
+.npc-mouth {
+  width: 15px;
+  height: 6px;
+  background: #D84315;
+  border-radius: 0 0 8px 8px;
+  margin: 0 auto;
+  
+  &.talking {
+    animation: mouthMove 0.3s ease-in-out infinite;
+  }
+}
+
+@keyframes mouthMove {
+  0%, 100% { height: 6px; }
+  50% { height: 12px; }
+}
+
+.npc-body {
+  width: 45px;
+  height: 50px;
+  background: linear-gradient(180deg, #42A5F5 0%, #1E88E5 100%);
+  border: 3px solid #5D4037;
+  border-radius: 8px 8px 4px 4px;
+  margin: -3px auto 0;
+}
+
+.npc-info {
+  h3 {
+    font-size: 20px;
+    color: #5D4037;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #C8E6C9;
+  border: 2px solid #4CAF50;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #4CAF50;
+  border-radius: 50%;
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.emotion-garden-card {
+  background: linear-gradient(180deg, #FCE4EC 0%, #F8BBD9 100%);
+  border: 4px solid #5D4037;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 4px 4px 0 #5D4037;
+}
+
+.garden-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5D4037;
+  margin-bottom: 15px;
+}
+
+.garden-icon {
+  font-size: 20px;
+}
+
+.emotion-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.emotion-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid #5D4037;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 3px 3px 0 #5D4037;
+}
+
+.emotion-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.emotion-score {
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.emotion-status {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.status-label {
+  color: #6D4C41;
+}
+
+.status-value {
+  font-weight: 700;
+  color: #4CAF50;
+  
+  &.negative {
+    color: #F44336;
+  }
+}
+
+.risk-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.risk-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.risk-dot {
+  width: 10px;
+  height: 10px;
+  background: #E0E0E0;
+  border: 2px solid #5D4037;
+  border-radius: 50%;
+  
+  &.active {
+    background: #FF9800;
+  }
+}
+
+.risk-text {
+  font-size: 12px;
+  color: #5D4037;
+  font-weight: 600;
+}
+
+.suggestion-box {
+  background: white;
+  border: 2px solid #5D4037;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.suggestion-icon {
+  font-size: 18px;
+}
+
+.suggestion-text {
+  font-size: 12px;
+  color: #5D4037;
+  line-height: 1.4;
+}
+
+.action-list {
+  background: white;
+  border: 2px solid #5D4037;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.action-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #5D4037;
+  margin-bottom: 8px;
+}
+
+.action-item {
+  font-size: 11px;
+  color: #6D4C41;
+  padding: 4px 0;
+  border-bottom: 1px dashed #E0E0E0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.session-list-card {
+  flex: 1;
+  background: white;
+  border: 4px solid #5D4037;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 4px 4px 0 #5D4037;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: linear-gradient(180deg, #C8E6C9 0%, #A5D6A7 100%);
+  border-bottom: 3px solid #5D4037;
+  font-weight: 700;
+  color: #2E7D32;
+}
+
+.new-session-btn {
+  background: #4CAF50 !important;
+  border: 2px solid #2E7D32 !important;
+  color: white !important;
+  
+  &:hover {
+    background: #66BB6A !important;
+  }
+}
+
+.session-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.session-item {
+  position: relative;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #FFF8E1;
+  border: 2px solid #8D6E63;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #FFECB3;
+    transform: translateX(3px);
+  }
+  
+  &.active {
+    background: #C8E6C9;
+    border-color: #4CAF50;
+  }
+}
+
+.session-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5D4037;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.session-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #8D6E63;
+}
+
+.session-count {
+  color: #4CAF50;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #F44336 !important;
+  
+  &:hover {
+    color: #D32F2F !important;
+  }
+}
+
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 4px solid #5D4037;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 #5D4037;
+  overflow: hidden;
+}
+
+.chat-header {
+  background: linear-gradient(180deg, #81C784 0%, #4CAF50 100%);
+  padding: 15px 20px;
+  border-bottom: 3px solid #5D4037;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.npc-mini-avatar {
+  width: 45px;
+  height: 45px;
+  background: #FFCC80;
+  border: 3px solid #5D4037;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-head {
+  width: 25px;
+  height: 25px;
+  background: #8D6E63;
+  border-radius: 50% 50% 30% 30%;
+}
+
+.header-text {
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    color: white;
+    text-shadow: 2px 2px 0 #2E7D32;
+  }
+  
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #E8F5E9;
+  }
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: linear-gradient(180deg, #FFFDE7 0%, #FFF9C4 100%);
+  min-height: 400px;
+  max-height: calc(100vh - 280px);
+}
+
+.welcome-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+}
+
+.npc-avatar-large {
+  margin-bottom: 20px;
+}
+
+.npc-head-large {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  background: #FFCC80;
+  border-radius: 50% 50% 45% 45%;
+  border: 4px solid #5D4037;
+  margin: 0 auto;
+}
+
+.npc-hair-large {
+  position: absolute;
+  top: -15px;
+  left: 10px;
+  width: 80px;
+  height: 50px;
+  background: #8D6E63;
+  border-radius: 50% 50% 30% 30%;
+  border: 3px solid #5D4037;
+}
+
+.npc-face-large {
+  position: absolute;
+  top: 40px;
+  left: 15px;
+  width: 70px;
+}
+
+.npc-eyes-large {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  margin-bottom: 10px;
+}
+
+.npc-eye-large {
+  width: 14px;
+  height: 16px;
+  background: #3E2723;
+  border-radius: 50%;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+  }
+}
+
+.npc-mouth-large {
+  width: 25px;
+  height: 10px;
+  background: #D84315;
+  border-radius: 0 0 15px 15px;
+  margin: 0 auto;
+  
+  &.smile {
+    width: 35px;
+    height: 18px;
+    border-radius: 0 0 20px 20px;
+  }
+}
+
+.npc-body-large {
+  width: 70px;
+  height: 80px;
+  background: linear-gradient(180deg, #42A5F5 0%, #1E88E5 100%);
+  border: 4px solid #5D4037;
+  border-radius: 12px 12px 6px 6px;
+  margin: -5px auto 0;
+}
+
+.speech-bubble {
+  position: relative;
+  max-width: 70%;
+  padding: 15px 20px;
+  border-radius: 20px;
+  border: 3px solid #5D4037;
+  box-shadow: 3px 3px 0 #5D4037;
+  
+  &.welcome {
+    background: white;
+    max-width: 500px;
+  }
+  
+  &.user {
+    background: linear-gradient(180deg, #81C784 0%, #66BB6A 100%);
+    border-radius: 20px 20px 5px 20px;
+  }
+  
+  &.npc {
+    background: white;
+    border-radius: 20px 20px 20px 5px;
+  }
+}
+
+.bubble-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #3E2723;
+  
+  p {
+    margin: 0;
+  }
+}
+
+.bubble-tail {
+  position: absolute;
+  bottom: 10px;
+  width: 15px;
+  height: 15px;
+  background: inherit;
+  border: 3px solid #5D4037;
+  
+  .welcome & {
+    display: none;
+  }
+  
+  .user & {
+    right: -8px;
+    background: #66BB6A;
+    border-left: none;
+    border-top: none;
+    transform: rotate(45deg);
+  }
+}
+
+.message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  
+  &.user-row {
+    flex-direction: row-reverse;
+  }
+}
+
+.mini-avatar-npc, .mini-avatar-user {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #5D4037;
+  flex-shrink: 0;
+}
+
+.mini-avatar-npc {
+  background: #FFCC80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &.talking {
+    animation: avatarBounce 0.4s ease-in-out infinite;
+  }
+}
+
+@keyframes avatarBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.mini-head-npc {
+  width: 22px;
+  height: 22px;
+  background: #8D6E63;
+  border-radius: 50% 50% 30% 30%;
+}
+
+.mini-avatar-user {
+  background: linear-gradient(180deg, #90CAF9 0%, #64B5F6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-head-user {
+  width: 22px;
+  height: 22px;
+  background: #5D4037;
+  border-radius: 50%;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 5px;
+  padding: 5px 0;
+  
+  span {
+    width: 10px;
+    height: 10px;
+    background: #8D6E63;
+    border-radius: 50%;
+    animation: typingDot 1s ease-in-out infinite;
+    
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes typingDot {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-8px); opacity: 1; }
+}
+
+.error-text {
+  color: #C62828;
+  font-weight: 500;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 15px;
+  padding: 15px 20px;
+  background: #FFF8E1;
+  border-top: 3px solid #5D4037;
+}
+
+.input-wrapper {
+  flex: 1;
+}
+
+.stardew-input {
+  :deep(.el-textarea__inner) {
+    background: white;
+    border: 3px solid #5D4037 !important;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 12px 15px;
+    resize: none;
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
+    
+    &:focus {
+      border-color: #4CAF50 !important;
     }
+  }
+}
+
+.input-hint {
+  font-size: 11px;
+  color: #8D6E63;
+  margin-top: 5px;
+}
+
+.send-btn {
+  width: 80px;
+  background: linear-gradient(180deg, #81C784 0%, #4CAF50 100%) !important;
+  border: 3px solid #2E7D32 !important;
+  border-radius: 12px;
+  color: white !important;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 3px 3px 0 #2E7D32;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  
+  &:hover:not(:disabled) {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #2E7D32;
+  }
+  
+  &:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #2E7D32;
+  }
+  
+  &:disabled {
+    background: #E0E0E0 !important;
+    border-color: #BDBDBD !important;
+    box-shadow: 3px 3px 0 #BDBDBD;
+    color: #9E9E9E !important;
+  }
+  
+  .btn-icon {
+    font-size: 20px;
+  }
+}
+
+.pixel-border {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: repeating-linear-gradient(90deg, 
+    #5D4037 0px, #5D4037 8px,
+    #8D6E63 8px, #8D6E63 16px);
+  z-index: 100;
+  
+  &.top { top: 0; }
+  &.bottom { bottom: 0; }
 }
 </style>
