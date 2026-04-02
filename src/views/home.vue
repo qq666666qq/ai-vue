@@ -13,31 +13,49 @@
       <div class="pixel-tree" style="right: 10%"></div>
     </div>
     
-    <!-- 跟随鼠标的像素角色 -->
+    <!-- 罗小黑风格的猫咪 -->
     <div 
-      class="pixel-character mouse-follow" 
-      ref="characterRef"
-      :style="characterStyle"
-      :class="[`emotion-${currentEmotion}`, { 'is-walking': isWalking, 'facing-left': facingLeft }]"
+      class="luo-xiao-hei" 
+      :style="catStyle"
+      :class="[`cat-${currentState}`, { 'facing-left': facingLeft }]"
     >
-      <div class="character-head">
-        <div class="character-hair"></div>
-        <div class="character-face">
-          <div class="character-eyes">
-            <div class="character-eye"></div>
-            <div class="character-eye"></div>
+      <!-- 头部 -->
+      <div class="cat-head">
+        <!-- 耳朵 -->
+        <div class="cat-ears">
+          <div class="cat-ear left"></div>
+          <div class="cat-ear right"></div>
+        </div>
+        <!-- 眼睛 -->
+        <div class="cat-eyes">
+          <div class="cat-eye left">
+            <div class="cat-pupil" :style="eyeLeftStyle"></div>
           </div>
-          <div class="character-mouth"></div>
+          <div class="cat-eye right">
+            <div class="cat-pupil" :style="eyeRightStyle"></div>
+          </div>
+        </div>
+        <!-- 鼻子和嘴巴 -->
+        <div class="cat-nose"></div>
+        <div class="cat-mouth" :class="`mouth-${currentEmotion}`"></div>
+        <!-- 胡须 -->
+        <div class="cat-whiskers">
+          <div class="whisker left"></div>
+          <div class="whisker left"></div>
+          <div class="whisker right"></div>
+          <div class="whisker right"></div>
         </div>
       </div>
-      <div class="character-body"></div>
-      <div class="character-arms">
-        <div class="character-arm left"></div>
-        <div class="character-arm right"></div>
-      </div>
-      <div class="character-legs">
-        <div class="character-leg left"></div>
-        <div class="character-leg right"></div>
+      <!-- 身体 -->
+      <div class="cat-body"></div>
+      <!-- 尾巴 -->
+      <div class="cat-tail" :class="`tail-${currentState}`"></div>
+      <!-- 四肢 -->
+      <div class="cat-legs">
+        <div class="cat-leg front left" :class="`leg-${currentState}`"></div>
+        <div class="cat-leg front right" :class="`leg-${currentState}`"></div>
+        <div class="cat-leg back left" :class="`leg-${currentState}`"></div>
+        <div class="cat-leg back right" :class="`leg-${currentState}`"></div>
       </div>
     </div>
     
@@ -48,7 +66,7 @@
         <div class="pixel-speech-bubble">
           <div class="speech-content">
             <h2>你好！欢迎来到心灵牧场 🌟</h2>
-            <p>移动鼠标，我会跟着你走哦！</p>
+            <p>移动鼠标，罗小黑会跟着你哦！</p>
             <p>我是你的AI朋友，在这里你可以：</p>
             <ul>
               <li>💬 与我聊天，分享你的心情</li>
@@ -81,111 +99,179 @@ import { useRouter } from 'vue-router'
 import StardewButton from '../components/StardewButton.vue'
 
 const router = useRouter()
-const characterRef = ref(null)
 
 // 鼠标位置
 const mouseX = ref(window.innerWidth / 2)
 const mouseY = ref(window.innerHeight / 2)
 
-// 角色目标位置
+// 猫咪目标位置
 const targetX = ref(window.innerWidth / 2)
 const targetY = ref(window.innerHeight / 2)
 
-// 角色当前位置
-const characterX = ref(window.innerWidth / 2)
-const characterY = ref(window.innerHeight / 2)
+// 猫咪当前位置
+const catX = ref(window.innerWidth / 2)
+const catY = ref(window.innerHeight / 2)
 
-// 角色状态
-const isWalking = ref(false)
+// 猫咪状态
+const currentState = ref('idle') // idle, walking, running, pouncing
+const currentEmotion = ref('happy') // happy, curious, sleepy, excited
 const facingLeft = ref(false)
-const isIdle = ref(true)
-const currentEmotion = ref('happy')
+
+// 眼睛位置
+const eyeLeftX = ref(0)
+const eyeLeftY = ref(0)
+const eyeRightX = ref(0)
+const eyeRightY = ref(0)
 
 // 动画帧ID
 let animationFrameId = null
 let idleAnimationId = null
+let emotionChangeId = null
 
-// 角色样式
-const characterStyle = computed(() => ({
-  left: `${characterX.value}px`,
-  top: `${characterY.value}px`
+// 猫咪样式
+const catStyle = computed(() => ({
+  left: `${catX.value}px`,
+  top: `${catY.value}px`
 }))
 
-// 角色情绪样式
-const characterEmotionClass = computed(() => {
-  return `emotion-${currentEmotion.value}`
-})
+// 眼睛样式
+const eyeLeftStyle = computed(() => ({
+  transform: `translate(${eyeLeftX.value}px, ${eyeLeftY.value}px)`
+}))
+
+const eyeRightStyle = computed(() => ({
+  transform: `translate(${eyeRightX.value}px, ${eyeRightY.value}px)`
+}))
 
 // 处理鼠标移动
 const handleMouseMove = (event) => {
   mouseX.value = event.clientX
   mouseY.value = event.clientY
   
-  // 随机决定是否立即跟随
-  if (Math.random() > 0.3) {
-    targetX.value = mouseX.value
-    targetY.value = mouseY.value
-    isIdle.value = false
+  // 平滑更新目标位置，避免频繁变化
+  const distance = Math.sqrt(
+    Math.pow(mouseX.value - catX.value, 2) + Math.pow(mouseY.value - catY.value, 2)
+  )
+  
+  // 只有当距离足够远时才更新目标位置
+  if (distance > 20) {
+    // 使用缓动效果平滑更新目标位置
+    targetX.value = targetX.value * 0.8 + mouseX.value * 0.2
+    targetY.value = targetY.value * 0.8 + mouseY.value * 0.2
     
-    // 随机情绪变化
-    const emotions = ['happy', 'excited', 'curious']
-    currentEmotion.value = emotions[Math.floor(Math.random() * emotions.length)]
+    // 根据距离决定状态
+    if (distance > 100) {
+      if (currentState.value !== 'running') {
+        currentState.value = 'running'
+        currentEmotion.value = 'excited'
+      }
+    } else if (distance > 30) {
+      if (currentState.value !== 'walking') {
+        currentState.value = 'walking'
+        currentEmotion.value = 'curious'
+      }
+    } else {
+      if (currentState.value !== 'pouncing') {
+        currentState.value = 'pouncing'
+        currentEmotion.value = 'happy'
+      }
+    }
   }
 }
 
 // 空闲动画
 const idleAnimation = () => {
-  if (isIdle.value) {
+  if (currentState.value === 'idle') {
     // 随机小移动
-    const randomX = Math.random() * 10 - 5
-    const randomY = Math.random() * 5 - 2.5
+    const randomX = Math.random() * 5 - 2.5
+    const randomY = Math.random() * 3 - 1.5
     
     // 缓慢移动
-    characterX.value += randomX * 0.1
-    characterY.value += randomY * 0.1
+    catX.value += randomX * 0.1
+    catY.value += randomY * 0.1
     
-    // 随机表情变化
-    if (Math.random() > 0.95) {
-      const idleEmotions = ['happy', 'thinking', 'bored']
+    // 随机情绪变化
+    if (Math.random() > 0.98) {
+      const idleEmotions = ['happy', 'curious', 'sleepy']
       currentEmotion.value = idleEmotions[Math.floor(Math.random() * idleEmotions.length)]
+    }
+    
+    // 随机状态变化
+    if (Math.random() > 0.95) {
+      currentState.value = 'walking'
+      setTimeout(() => {
+        currentState.value = 'idle'
+      }, 2000)
     }
   }
   
   idleAnimationId = requestAnimationFrame(idleAnimation)
 }
 
-// 角色动画
-const animateCharacter = () => {
-  const dx = targetX.value - characterX.value
-  const dy = targetY.value - characterY.value
+// 猫咪动画
+const animateCat = () => {
+  const dx = targetX.value - catX.value
+  const dy = targetY.value - catY.value
   const distance = Math.sqrt(dx * dx + dy * dy)
   
-  if (distance > 10) {
-    isWalking.value = true
-    isIdle.value = false
+  if (distance > 5) {
     facingLeft.value = dx < 0
     
-    // 添加平滑的缓动效果
-    const ease = 0.06
-    characterX.value += dx * ease
-    characterY.value += dy * ease
+    // 使用缓动效果平滑移动
+    const easing = 0.1
+    catX.value += dx * easing
+    catY.value += dy * easing
     
-    // 接近目标时减速
-    if (distance < 50) {
-      const slowEase = 0.03
-      characterX.value += dx * slowEase
-      characterY.value += dy * slowEase
+    // 根据距离动态调整状态
+    if (distance > 100) {
+      if (currentState.value !== 'running') {
+        currentState.value = 'running'
+        currentEmotion.value = 'excited'
+      }
+    } else if (distance > 30) {
+      if (currentState.value !== 'walking') {
+        currentState.value = 'walking'
+        currentEmotion.value = 'curious'
+      }
+    } else if (distance > 5) {
+      if (currentState.value !== 'pouncing') {
+        currentState.value = 'pouncing'
+        currentEmotion.value = 'happy'
+      }
     }
-  } else if (distance <= 10 && !isIdle.value) {
-    isWalking.value = false
-    isIdle.value = true
     
-    // 到达目标后的情绪变化
-    const arrivalEmotions = ['happy', 'satisfied', 'calm']
-    currentEmotion.value = arrivalEmotions[Math.floor(Math.random() * arrivalEmotions.length)]
+    // 眼睛跟随 - 使用缓动效果
+    const eyeTargetX = (dx / distance) * Math.min(distance / 20, 10)
+    const eyeTargetY = (dy / distance) * Math.min(distance / 20, 10)
+    eyeLeftX.value += (eyeTargetX - eyeLeftX.value) * 0.2
+    eyeLeftY.value += (eyeTargetY - eyeLeftY.value) * 0.2
+    eyeRightX.value += (eyeTargetX - eyeRightX.value) * 0.2
+    eyeRightY.value += (eyeTargetY - eyeRightY.value) * 0.2
+  } else if (distance <= 5) {
+    // 到达目标
+    if (currentState.value !== 'idle') {
+      currentState.value = 'idle'
+      currentEmotion.value = 'happy'
+    }
+    
+    // 眼睛复位 - 使用缓动效果
+    eyeLeftX.value += (0 - eyeLeftX.value) * 0.2
+    eyeLeftY.value += (0 - eyeLeftY.value) * 0.2
+    eyeRightX.value += (0 - eyeRightX.value) * 0.2
+    eyeRightY.value += (0 - eyeRightY.value) * 0.2
   }
   
-  animationFrameId = requestAnimationFrame(animateCharacter)
+  animationFrameId = requestAnimationFrame(animateCat)
+}
+
+// 随机情绪变化
+const randomEmotionChange = () => {
+  if (currentState.value === 'idle') {
+    const emotions = ['happy', 'curious', 'sleepy', 'excited']
+    currentEmotion.value = emotions[Math.floor(Math.random() * emotions.length)]
+  }
+  
+  emotionChangeId = setTimeout(randomEmotionChange, 5000 + Math.random() * 10000)
 }
 
 const navigateToConsultation = () => {
@@ -202,8 +288,9 @@ const navigateToKnowledge = () => {
 
 onMounted(() => {
   document.body.classList.add('page-loaded')
-  animateCharacter()
+  animateCat()
   idleAnimation()
+  randomEmotionChange()
 })
 
 onUnmounted(() => {
@@ -212,6 +299,9 @@ onUnmounted(() => {
   }
   if (idleAnimationId) {
     cancelAnimationFrame(idleAnimationId)
+  }
+  if (emotionChangeId) {
+    clearTimeout(emotionChangeId)
   }
 })
 </script>
@@ -418,6 +508,380 @@ onUnmounted(() => {
   }
 }
 
+/* 罗小黑风格的猫咪 */
+.luo-xiao-hei {
+  position: fixed;
+  width: 120px;
+  height: 80px;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: transform 0.1s ease;
+}
+
+.luo-xiao-hei.facing-left {
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+
+/* 头部 */
+.cat-head {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 30px;
+  background: #212121;
+  border: 2px solid #000;
+  border-radius: 50% 50% 40% 40%;
+  z-index: 2;
+  
+  /* 耳朵 */
+  .cat-ears {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    display: flex;
+    justify-content: space-between;
+    
+    .cat-ear {
+      width: 12px;
+      height: 16px;
+      background: #212121;
+      border: 2px solid #000;
+      border-radius: 50% 50% 0 0;
+      
+      &.left {
+        transform: rotate(-30deg);
+      }
+      
+      &.right {
+        transform: rotate(30deg);
+      }
+    }
+  }
+  
+  /* 眼睛 */
+  .cat-eyes {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    display: flex;
+    justify-content: space-between;
+    
+    .cat-eye {
+      width: 10px;
+      height: 10px;
+      background: white;
+      border: 1px solid #000;
+      border-radius: 50%;
+      position: relative;
+      
+      .cat-pupil {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 6px;
+        height: 6px;
+        background: #000;
+        border-radius: 50%;
+        transition: transform 0.1s ease;
+      }
+    }
+  }
+  
+  /* 鼻子 */
+  .cat-nose {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 4px;
+    background: #FF6B6B;
+    border-radius: 50%;
+  }
+  
+  /* 嘴巴 */
+  .cat-mouth {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 4px;
+    
+    &.mouth-happy {
+      background: transparent;
+      border-bottom: 2px solid #000;
+      border-radius: 0 0 10px 10px;
+    }
+    
+    &.mouth-curious {
+      background: transparent;
+      border-bottom: 2px solid #000;
+      border-radius: 0 0 8px 8px;
+    }
+    
+    &.mouth-sleepy {
+      background: transparent;
+      border-top: 2px solid #000;
+      border-radius: 8px 8px 0 0;
+    }
+    
+    &.mouth-excited {
+      background: transparent;
+      border-bottom: 2px solid #000;
+      border-radius: 0 0 12px 12px;
+      animation: excited-mouth 0.5s ease-in-out infinite;
+    }
+  }
+  
+  /* 胡须 */
+  .cat-whiskers {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    
+    .whisker {
+      position: absolute;
+      width: 12px;
+      height: 1px;
+      background: #000;
+      
+      &.left {
+        left: 0;
+        transform-origin: right center;
+      }
+      
+      &.right {
+        right: 0;
+        transform-origin: left center;
+      }
+      
+      &:nth-child(1) {
+        top: 0;
+        transform: rotate(-15deg);
+      }
+      
+      &:nth-child(2) {
+        top: 2px;
+        transform: rotate(-5deg);
+      }
+      
+      &:nth-child(3) {
+        top: 0;
+        transform: rotate(15deg);
+      }
+      
+      &:nth-child(4) {
+        top: 2px;
+        transform: rotate(5deg);
+      }
+    }
+  }
+}
+
+/* 身体 */
+.cat-body {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 40px;
+  background: #212121;
+  border: 2px solid #000;
+  border-radius: 50% 50% 40% 40%;
+  z-index: 1;
+}
+
+/* 尾巴 */
+.cat-tail {
+  position: absolute;
+  top: 30px;
+  right: 10px;
+  width: 30px;
+  height: 8px;
+  background: #212121;
+  border: 2px solid #000;
+  border-radius: 10px;
+  transform-origin: left center;
+  
+  &.tail-idle {
+    animation: tail-wag 2s ease-in-out infinite;
+  }
+  
+  &.tail-walking {
+    animation: tail-walk 1s ease-in-out infinite;
+  }
+  
+  &.tail-running {
+    animation: tail-run 0.5s ease-in-out infinite;
+  }
+  
+  &.tail-pouncing {
+    animation: tail-pounce 0.3s ease-in-out infinite;
+  }
+}
+
+/* 四肢 */
+.cat-legs {
+  position: absolute;
+  top: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 25px;
+  z-index: 0;
+  
+  .cat-leg {
+    position: absolute;
+    width: 12px;
+    height: 20px;
+    background: #212121;
+    border: 2px solid #000;
+    border-radius: 10px 10px 0 0;
+    transform-origin: top center;
+    
+    &.front {
+      top: 0;
+    }
+    
+    &.back {
+      top: 5px;
+    }
+    
+    &.left {
+      left: 10px;
+    }
+    
+    &.right {
+      right: 10px;
+    }
+    
+    &.leg-walking.left {
+      animation: walk-leg-left 0.5s ease-in-out infinite;
+    }
+    
+    &.leg-walking.right {
+      animation: walk-leg-right 0.5s ease-in-out infinite;
+    }
+    
+    &.leg-running.left {
+      animation: run-leg-left 0.3s ease-in-out infinite;
+    }
+    
+    &.leg-running.right {
+      animation: run-leg-right 0.3s ease-in-out infinite;
+    }
+    
+    &.leg-pouncing {
+      animation: pounce-leg 0.3s ease-in-out infinite;
+    }
+  }
+}
+
+/* 动画效果 */
+@keyframes excited-mouth {
+  0%, 100% {
+    transform: translateX(-50%) scaleX(1);
+  }
+  50% {
+    transform: translateX(-50%) scaleX(1.2);
+  }
+}
+
+@keyframes tail-wag {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-15deg);
+  }
+}
+
+@keyframes tail-walk {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+}
+
+@keyframes tail-run {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes tail-pounce {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes walk-leg-left {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes walk-leg-right {
+  0%, 100% {
+    transform: rotate(30deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes run-leg-left {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes run-leg-right {
+  0%, 100% {
+    transform: rotate(45deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes pounce-leg {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+}
+
 /* 主内容区 */
 .home-content {
   position: relative;
@@ -428,313 +892,6 @@ onUnmounted(() => {
   justify-content: center;
   min-height: 100vh;
   padding: 0 20px;
-}
-
-/* 像素角色 - 原始静态版本 */
-.pixel-character.animated {
-  position: relative;
-  width: 120px;
-  height: 180px;
-  margin-bottom: 40px;
-  animation: character-bounce 2s ease-in-out infinite;
-}
-
-@keyframes character-bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* 像素角色 - 跟随鼠标版本 */
-.pixel-character.mouse-follow {
-  position: fixed;
-  width: 80px;
-  height: 120px;
-  z-index: 100;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  transition: transform 0.1s ease;
-}
-
-.pixel-character.mouse-follow.facing-left {
-  transform: translate(-50%, -50%) scaleX(-1);
-}
-
-.pixel-character.mouse-follow .character-head {
-  width: 40px;
-  height: 40px;
-}
-
-.pixel-character.mouse-follow .character-body {
-  width: 32px;
-  height: 40px;
-}
-
-.pixel-character.mouse-follow .character-arms {
-  top: 50px;
-  left: -14px;
-  width: 108px;
-}
-
-.pixel-character.mouse-follow .character-arm {
-  width: 12px;
-  height: 28px;
-}
-
-.pixel-character.mouse-follow .character-legs {
-  left: 18px;
-  width: 44px;
-}
-
-.pixel-character.mouse-follow .character-leg {
-  width: 12px;
-  height: 28px;
-}
-
-/* 走路动画 */
-.pixel-character.mouse-follow.is-walking .character-leg.left {
-  animation: walk-left 0.5s ease-in-out infinite;
-}
-
-.pixel-character.mouse-follow.is-walking .character-leg.right {
-  animation: walk-right 0.5s ease-in-out infinite;
-}
-
-.pixel-character.mouse-follow.is-walking .character-arm.left {
-  animation: walk-arm-left 0.5s ease-in-out infinite;
-}
-
-.pixel-character.mouse-follow.is-walking .character-arm.right {
-  animation: walk-arm-right 0.5s ease-in-out infinite;
-}
-
-@keyframes walk-left {
-  0%, 100% {
-    transform: rotate(0deg) translateY(0);
-  }
-  50% {
-    transform: rotate(25deg) translateY(-8px);
-  }
-}
-
-@keyframes walk-right {
-  0%, 100% {
-    transform: rotate(0deg) translateY(0);
-  }
-  50% {
-    transform: rotate(-25deg) translateY(-8px);
-  }
-}
-
-@keyframes walk-arm-left {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(-30deg);
-  }
-}
-
-@keyframes walk-arm-right {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(30deg);
-  }
-}
-
-/* 情绪状态 */
-.pixel-character.mouse-follow.emotion-happy .character-mouth {
-  width: 12px;
-  height: 6px;
-  background: #D84315;
-  border-radius: 0 0 8px 8px;
-}
-
-.pixel-character.mouse-follow.emotion-excited .character-mouth {
-  width: 14px;
-  height: 8px;
-  background: #D84315;
-  border-radius: 0 0 10px 10px;
-  animation: excited-mouth 1s ease-in-out infinite;
-}
-
-.pixel-character.mouse-follow.emotion-curious .character-eyes {
-  animation: curious-eyes 2s ease-in-out infinite;
-}
-
-.pixel-character.mouse-follow.emotion-thinking .character-head {
-  animation: thinking 2s ease-in-out infinite;
-}
-
-.pixel-character.mouse-follow.emotion-bored .character-mouth {
-  width: 10px;
-  height: 2px;
-  background: #D84315;
-  border-radius: 2px;
-}
-
-@keyframes excited-mouth {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
-
-@keyframes curious-eyes {
-  0%, 100% {
-    transform: scaleY(1);
-  }
-  50% {
-    transform: scaleY(0.8);
-  }
-}
-
-@keyframes thinking {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(5deg);
-  }
-  75% {
-    transform: rotate(-5deg);
-  }
-}
-
-.character-head {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  background: #FFCC80;
-  border: 4px solid #5D4037;
-  border-radius: 50% 50% 45% 45%;
-  margin: 0 auto 8px;
-}
-
-.character-hair {
-  position: absolute;
-  top: -8px;
-  left: 8px;
-  width: 40px;
-  height: 24px;
-  background: #8D6E63;
-  border: 3px solid #5D4037;
-  border-radius: 50% 50% 30% 30%;
-}
-
-.character-face {
-  position: absolute;
-  top: 20px;
-  left: 10px;
-  width: 40px;
-  height: 30px;
-}
-
-.character-eyes {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 4px;
-  margin-bottom: 4px;
-}
-
-.character-eye {
-  width: 8px;
-  height: 8px;
-  background: #3E2723;
-  border: 2px solid #5D4037;
-  border-radius: 50%;
-}
-
-.character-mouth {
-  width: 12px;
-  height: 6px;
-  background: #D84315;
-  border: 2px solid #5D4037;
-  border-radius: 0 0 8px 8px;
-  margin: 0 auto;
-}
-
-.character-body {
-  width: 48px;
-  height: 60px;
-  background: #42A5F5;
-  border: 4px solid #5D4037;
-  border-radius: 8px 8px 6px 6px;
-  margin: 0 auto 8px;
-}
-
-.character-arms {
-  position: absolute;
-  top: 76px;
-  left: -20px;
-  width: 160px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.character-arm {
-  width: 16px;
-  height: 40px;
-  background: #FFCC80;
-  border: 4px solid #5D4037;
-  border-radius: 8px;
-  animation: arm-wave 2s ease-in-out infinite;
-}
-
-.character-arm.left {
-  transform-origin: right center;
-}
-
-.character-arm.right {
-  transform-origin: left center;
-  animation-delay: 1s;
-}
-
-@keyframes arm-wave {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(30deg);
-  }
-}
-
-.character-legs {
-  position: absolute;
-  bottom: 0;
-  left: 28px;
-  width: 64px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.character-leg {
-  width: 16px;
-  height: 40px;
-  background: #FF5722;
-  border: 4px solid #5D4037;
-  border-radius: 8px 8px 0 0;
-  animation: leg-walk 2s ease-in-out infinite;
-}
-
-.character-leg.left {
-  animation-delay: 1s;
-}
-
-@keyframes leg-walk {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-5px) rotate(10deg);
-  }
 }
 
 /* 欢迎信息 */
@@ -891,39 +1048,34 @@ onUnmounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .pixel-character {
+  .luo-xiao-hei {
     width: 100px;
-    height: 150px;
+    height: 60px;
   }
   
-  .character-head {
-    width: 50px;
-    height: 50px;
+  .cat-head {
+    width: 32px;
+    height: 24px;
   }
   
-  .character-body {
-    width: 40px;
-    height: 50px;
-  }
-  
-  .character-arms {
-    left: -15px;
-    width: 130px;
-  }
-  
-  .character-arm {
-    width: 12px;
+  .cat-body {
+    width: 48px;
     height: 32px;
   }
   
-  .character-legs {
-    left: 24px;
-    width: 52px;
+  .cat-tail {
+    width: 24px;
+    height: 6px;
   }
   
-  .character-leg {
-    width: 12px;
-    height: 32px;
+  .cat-legs {
+    width: 56px;
+    height: 20px;
+  }
+  
+  .cat-leg {
+    width: 10px;
+    height: 16px;
   }
   
   .speech-content h2 {
