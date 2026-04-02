@@ -18,7 +18,7 @@
       class="pixel-character mouse-follow" 
       ref="characterRef"
       :style="characterStyle"
-      :class="{ 'is-walking': isWalking, 'facing-left': facingLeft }"
+      :class="[`emotion-${currentEmotion}`, { 'is-walking': isWalking, 'facing-left': facingLeft }]"
     >
       <div class="character-head">
         <div class="character-hair"></div>
@@ -83,39 +83,106 @@ import StardewButton from '../components/StardewButton.vue'
 const router = useRouter()
 const characterRef = ref(null)
 
+// 鼠标位置
 const mouseX = ref(window.innerWidth / 2)
 const mouseY = ref(window.innerHeight / 2)
+
+// 角色目标位置
+const targetX = ref(window.innerWidth / 2)
+const targetY = ref(window.innerHeight / 2)
+
+// 角色当前位置
 const characterX = ref(window.innerWidth / 2)
 const characterY = ref(window.innerHeight / 2)
+
+// 角色状态
 const isWalking = ref(false)
 const facingLeft = ref(false)
-let animationFrameId = null
+const isIdle = ref(true)
+const currentEmotion = ref('happy')
 
+// 动画帧ID
+let animationFrameId = null
+let idleAnimationId = null
+
+// 角色样式
 const characterStyle = computed(() => ({
   left: `${characterX.value}px`,
   top: `${characterY.value}px`
 }))
 
+// 角色情绪样式
+const characterEmotionClass = computed(() => {
+  return `emotion-${currentEmotion.value}`
+})
+
+// 处理鼠标移动
 const handleMouseMove = (event) => {
   mouseX.value = event.clientX
   mouseY.value = event.clientY
+  
+  // 随机决定是否立即跟随
+  if (Math.random() > 0.3) {
+    targetX.value = mouseX.value
+    targetY.value = mouseY.value
+    isIdle.value = false
+    
+    // 随机情绪变化
+    const emotions = ['happy', 'excited', 'curious']
+    currentEmotion.value = emotions[Math.floor(Math.random() * emotions.length)]
+  }
 }
 
+// 空闲动画
+const idleAnimation = () => {
+  if (isIdle.value) {
+    // 随机小移动
+    const randomX = Math.random() * 10 - 5
+    const randomY = Math.random() * 5 - 2.5
+    
+    // 缓慢移动
+    characterX.value += randomX * 0.1
+    characterY.value += randomY * 0.1
+    
+    // 随机表情变化
+    if (Math.random() > 0.95) {
+      const idleEmotions = ['happy', 'thinking', 'bored']
+      currentEmotion.value = idleEmotions[Math.floor(Math.random() * idleEmotions.length)]
+    }
+  }
+  
+  idleAnimationId = requestAnimationFrame(idleAnimation)
+}
+
+// 角色动画
 const animateCharacter = () => {
-  const dx = mouseX.value - characterX.value
-  const dy = mouseY.value - characterY.value
+  const dx = targetX.value - characterX.value
+  const dy = targetY.value - characterY.value
   const distance = Math.sqrt(dx * dx + dy * dy)
   
-  if (distance > 5) {
+  if (distance > 10) {
     isWalking.value = true
+    isIdle.value = false
     facingLeft.value = dx < 0
     
     // 添加平滑的缓动效果
-    const ease = 0.08
+    const ease = 0.06
     characterX.value += dx * ease
     characterY.value += dy * ease
-  } else {
+    
+    // 接近目标时减速
+    if (distance < 50) {
+      const slowEase = 0.03
+      characterX.value += dx * slowEase
+      characterY.value += dy * slowEase
+    }
+  } else if (distance <= 10 && !isIdle.value) {
     isWalking.value = false
+    isIdle.value = true
+    
+    // 到达目标后的情绪变化
+    const arrivalEmotions = ['happy', 'satisfied', 'calm']
+    currentEmotion.value = arrivalEmotions[Math.floor(Math.random() * arrivalEmotions.length)]
   }
   
   animationFrameId = requestAnimationFrame(animateCharacter)
@@ -136,11 +203,15 @@ const navigateToKnowledge = () => {
 onMounted(() => {
   document.body.classList.add('page-loaded')
   animateCharacter()
+  idleAnimation()
 })
 
 onUnmounted(() => {
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId)
+  }
+  if (idleAnimationId) {
+    cancelAnimationFrame(idleAnimationId)
   }
 })
 </script>
@@ -473,6 +544,67 @@ onUnmounted(() => {
   }
   50% {
     transform: rotate(30deg);
+  }
+}
+
+/* 情绪状态 */
+.pixel-character.mouse-follow.emotion-happy .character-mouth {
+  width: 12px;
+  height: 6px;
+  background: #D84315;
+  border-radius: 0 0 8px 8px;
+}
+
+.pixel-character.mouse-follow.emotion-excited .character-mouth {
+  width: 14px;
+  height: 8px;
+  background: #D84315;
+  border-radius: 0 0 10px 10px;
+  animation: excited-mouth 1s ease-in-out infinite;
+}
+
+.pixel-character.mouse-follow.emotion-curious .character-eyes {
+  animation: curious-eyes 2s ease-in-out infinite;
+}
+
+.pixel-character.mouse-follow.emotion-thinking .character-head {
+  animation: thinking 2s ease-in-out infinite;
+}
+
+.pixel-character.mouse-follow.emotion-bored .character-mouth {
+  width: 10px;
+  height: 2px;
+  background: #D84315;
+  border-radius: 2px;
+}
+
+@keyframes excited-mouth {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes curious-eyes {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.8);
+  }
+}
+
+@keyframes thinking {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-5deg);
   }
 }
 
